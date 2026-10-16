@@ -28,6 +28,9 @@ computed on the CPUs. Then compare three decoding modes: plain, DFlash2 draft, a
 | dspark, ours (n_max 7, p_min 0.5) | 158 | 11.7 | 4.16 | 66/179 (37%), mean len 2.22 |
 | dspark, ours (n_max 7, p_min 0.5) | 158 (code) | 8.5 | 5.01 | 35/69 (51%), mean len 1.73 |
 | dspark, ours (n_max 7, p_min 0.5) | 3009 | 38.6 | 5.03 | 54/106 (51%), mean len 2.12 |
+| dspark, ours (n_max 7, p_min 0) | 158 | 11.4 | 2.78 | 73/364 (20%), 2.46 tok/cycle |
+| dspark, ours (n_max 7, p_min 0) | 158 (code) | 9.4 | 2.06 | 55/489 (11%) |
+| dspark, ours (n_max 7, p_min 0) | 3009 | 38.7 | 2.30 | 61/441 (14%) |
 
 All three modes produce identical greedy text (speculative decoding is lossless here).
 
@@ -56,3 +59,40 @@ Ours (greedy, llama.cpp, block verification):
   Muse backbone port (gated attention output, weightless post norms, norm-preserving residual gates, delta-form norms,
   qk scale 5.473, normed embeddings) is functionally right. Runs with p_min 0 (full 7-token drafts) and with the
   embedding norm disabled are below.
+
+## Finding 3: the CPU expert path is thread-bound, not bandwidth-bound (llama-bench, tg32, 2 reps)
+| experts on CPU (layers) | threads | decode tok/s | prefill pp32 tok/s |
+|---|---|---|---|
+| 62 (all) | 16 | 4.61 | 5.23 |
+| 62 (all) | 24 | 5.48 | 5.13 |
+| 62 (all) | 32 | 7.19 | 5.17 |
+| 62 (all) | 48 | 0.25 (thread starvation: never use every logical CPU) | 5.07 |
+| 56 (6 layers' experts on the GPU, +43.5 GiB VRAM) | 16 | 5.26 | 5.94 |
+| 56 | 24 | 6.26 | 5.65 |
+| 56 | 32 | 5.75 +-1.54 (noisy) | 5.78 |
+
+* Finer sweep with 56 CPU layers, 3 reps: 28 thr 5.99 +-1.42, 32 thr 6.07 +-0.80, 36 thr 7.34 +-0.43, 40 thr 6.23 +-0.75 tok/s
+  (noisy: six Blender render processes of the H3 fleet plus two kcompactd threads were using ~8 cores during all these
+  measurements, so every number here is a lower bound for an idle box; 32-36 threads is the usable range, 48 collapses).
+* Hyperthreads help (24 -> 32 threads: +31%), so the limit is per-core throughput of the Q4_K expert kernels, not DRAM.
+* Moving 6 of 62 layers' experts to the GPU buys the expected ~+14% (6/62 fewer CPU layers).
+* Prefill of a 32-token batch runs at the same tok/s as decode: with experts on the CPU, a batch costs ~linearly per token
+  (every expert of every layer is touched by a 32-token batch), which is the same effect that kills speculative decoding here.
+
+## Finding 4: using the spare VRAM (server, 32 threads, 128 tokens, GPU 2; CPUs shared with the fleet's renders)
+| config | short decode | code decode | long decode | GPU memory |
+|---|---|---|---|---|
+| all experts on CPU, 24 thr (baseline) | 5.67 | 6.50 | 5.96 | 24.5 GB |
+| repack off, 32 thr | 4.18 (overlapped with another job) | 5.78 | 5.08 | 24.5 GB |
+| repack off + `--moe-cache-mib 45000` (llama.cpp's GPU LRU cache of host experts), 32 thr | 4.15 | 4.45 | 3.78 | ~70 GB |
+| **repack on, experts of 6 layers on the GPU (`--n-cpu-moe 56`), 32 thr** | **7.58** | **6.37** | **7.33** | ~68 GB |
+
+* llama.cpp master already has the Strata idea built in: `--moe-cache-mib` keeps an LRU of host-resident experts on the GPU
+  (PR #29887, 2026-10-07) and uploads the misses over PCIe. It does not pay here (the cache's own hit/miss statistics are printed at shutdown and were not captured): with 8 of 256
+  experts per layer per token and a cache that holds ~11% of the experts, most selections must miss, and uploading one expert (29 MB, ~1.2 ms over PCIe)
+  costs more than computing it on the CPU (~0.35 ms). It also needs the repacked Q4_K kernels off (the cache only reads plain
+  host buffers), which by itself costs ~15%. A static placement of the hottest experts would only help if routing were
+  strongly skewed; see the routing histogram below.
+* Pinning whole layers' experts on the GPU keeps the repacked CPU kernels and removes 6/62 of the CPU work; with 32 threads
+  this is the best configuration measured: **7.3-7.6 tok/s** decode (+30% over the 24-thread baseline), prefill 13-43 tok/s.
+  It is now the default of `run_muse_spark.sh` (THREADS=32, NCMOE=56).

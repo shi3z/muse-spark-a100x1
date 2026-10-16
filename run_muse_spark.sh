@@ -7,8 +7,8 @@ LLAMA=${LLAMA:-/home/shi3z/llama.cpp-master/build/bin/llama-server}
 MODEL=${MODEL:-/mnt/ssd/models/gguf/Muse-Spark-Open-816B-A42B-Q4_K_S/Muse-Spark-Open-816B-A42B-Q4_K_S-00001-of-00022.gguf}
 GPU=${GPU:-2}
 CTX=${CTX:-16384}
-THREADS=${THREADS:-24}
-NCMOE=${NCMOE:-62}                 # layers whose experts stay on the CPU (62 = all)
+THREADS=${THREADS:-32}
+NCMOE=${NCMOE:-56}                 # layers whose experts stay on the CPU (62 = all)
 PORT=${PORT:-8020}
 EXTRA=${EXTRA:-}
 export CUDA_VISIBLE_DEVICES=$GPU

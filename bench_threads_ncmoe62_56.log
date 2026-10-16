@@ -1,0 +1,22 @@
+ggml_cuda_init: found 1 CUDA devices (Total VRAM: 81151 MiB):
+  Device 0: NVIDIA A100 80GB PCIe, compute capability 8.0, VMM: yes, VRAM: 81151 MiB
+| model                          |       size |     params | backend    | ngl |  n_cpu_moe | threads |  fa |         lm |            test |                  t/s |
+| ------------------------------ | ---------: | ---------: | ---------- | --: | ---------: | ------: | --: | ---------: | --------------: | -------------------: |
+| muse-spark 816B.A42B Q4_K - Small | 437.77 GiB |   819.99 B | CUDA       |  99 |         62 |      16 |   1 |       none |            pp32 |          5.23 ± 0.25 |
+| muse-spark 816B.A42B Q4_K - Small | 437.77 GiB |   819.99 B | CUDA       |  99 |         62 |      16 |   1 |       none |            tg32 |          4.61 ± 0.12 |
+| muse-spark 816B.A42B Q4_K - Small | 437.77 GiB |   819.99 B | CUDA       |  99 |         62 |      24 |   1 |       none |            pp32 |          5.13 ± 0.12 |
+| muse-spark 816B.A42B Q4_K - Small | 437.77 GiB |   819.99 B | CUDA       |  99 |         62 |      24 |   1 |       none |            tg32 |          5.48 ± 0.27 |
+| muse-spark 816B.A42B Q4_K - Small | 437.77 GiB |   819.99 B | CUDA       |  99 |         62 |      32 |   1 |       none |            pp32 |          5.17 ± 0.28 |
+| muse-spark 816B.A42B Q4_K - Small | 437.77 GiB |   819.99 B | CUDA       |  99 |         62 |      32 |   1 |       none |            tg32 |          7.19 ± 0.52 |
+| muse-spark 816B.A42B Q4_K - Small | 437.77 GiB |   819.99 B | CUDA       |  99 |         62 |      48 |   1 |       none |            pp32 |          5.07 ± 0.27 |
+| muse-spark 816B.A42B Q4_K - Small | 437.77 GiB |   819.99 B | CUDA       |  99 |         62 |      48 |   1 |       none |            tg32 |          0.25 ± 0.00 |
+| muse-spark 816B.A42B Q4_K - Small | 437.77 GiB |   819.99 B | CUDA       |  99 |         56 |      16 |   1 |       none |            pp32 |          5.94 ± 0.05 |
+| muse-spark 816B.A42B Q4_K - Small | 437.77 GiB |   819.99 B | CUDA       |  99 |         56 |      16 |   1 |       none |            tg32 |          5.26 ± 0.18 |
+| muse-spark 816B.A42B Q4_K - Small | 437.77 GiB |   819.99 B | CUDA       |  99 |         56 |      24 |   1 |       none |            pp32 |          5.65 ± 0.07 |
+| muse-spark 816B.A42B Q4_K - Small | 437.77 GiB |   819.99 B | CUDA       |  99 |         56 |      24 |   1 |       none |            tg32 |          6.26 ± 0.71 |
+| muse-spark 816B.A42B Q4_K - Small | 437.77 GiB |   819.99 B | CUDA       |  99 |         56 |      32 |   1 |       none |            pp32 |          5.78 ± 0.26 |
+| muse-spark 816B.A42B Q4_K - Small | 437.77 GiB |   819.99 B | CUDA       |  99 |         56 |      32 |   1 |       none |            tg32 |          5.75 ± 1.54 |
+| muse-spark 816B.A42B Q4_K - Small | 437.77 GiB |   819.99 B | CUDA       |  99 |         56 |      48 |   1 |       none |            pp32 |          5.77 ± 0.27 |
+| muse-spark 816B.A42B Q4_K - Small | 437.77 GiB |   819.99 B | CUDA       |  99 |         56 |      48 |   1 |       none |            tg32 |          0.28 ± 0.00 |
+
+build: 2851b3bcb (11675)

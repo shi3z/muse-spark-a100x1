@@ -1,7 +1,7 @@
 From 2cf52fa2cef84218f30fc948978d7598255cd89f Mon Sep 17 00:00:00 2001
 From: shi3z <shi3z@me.com>
 Date: Fri, 16 Oct 2026 02:22:19 +0000
-Subject: [PATCH 1/2] dflash: Muse Spark DSpark draft backbone (converter
+Subject: [PATCH 1/3] dflash: Muse Spark DSpark draft backbone (converter
  MuseSparkDSparkModel + gated/normed attention, residual gates, scaled
  post-FFN norm in the DFlash graph)
 

@@ -5,8 +5,8 @@ cd /mnt/ssdraid/project/muse-spark
 tmux kill-session -t muse 2>/dev/null; sleep 2
 for i in $(seq 1 60); do pgrep -x llama-server >/dev/null || break; sleep 2; done
 # tmux does not inherit the caller's environment: pass the knobs explicitly
-ENVS="GPU=${GPU:-2} THREADS=${THREADS:-24} CTX=${CTX:-16384} PORT=${PORT:-8020} LOAD_MODE=${LOAD_MODE:-none} NUMACTL=${NUMACTL:-1} PMIN=${PMIN:-0.5} ${EXTRA_ENV:-}"
-tmux new-session -d -s muse "cd /mnt/ssdraid/project/muse-spark && env $ENVS ./run_muse_cmp.sh $MODE 2>&1 | tee -a $LOGF"
+ENVS="GPU=${GPU:-2} THREADS=${THREADS:-32} CTX=${CTX:-16384} PORT=${PORT:-8020} LOAD_MODE=${LOAD_MODE:-none} NUMACTL=${NUMACTL:-1} PMIN=${PMIN:-0.5} ${EXTRA_ENV:-}"
+tmux new-session -d -s muse "cd /mnt/ssdraid/project/muse-spark && env $ENVS NCMOE=${NCMOE:-56} EXTRA_FLAGS='${EXTRA_FLAGS:-}' ./run_muse_cmp.sh $MODE 2>&1 | tee -a $LOGF"
 echo "=== $(date +%T) starting $MODE (log $LOGF)"
 for i in $(seq 1 240); do
   curl -s -m 5 http://127.0.0.1:8020/v1/models 2>/dev/null | grep -q '"object"' && { echo "=== ready after ~$((i*10))s"; exit 0; }

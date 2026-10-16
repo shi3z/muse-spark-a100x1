@@ -21,8 +21,29 @@ llama.cpp master の `--n-cpu-moe` で実現しています。
 | DSpark 自前実装 (n_max 7, p_min 0.5) | 158 tok | 11.7 | 4.16 | 37%、2.22 tok/cycle |
 | DSpark 自前実装 (n_max 7, p_min 0.5) | 158 tok (code) | 8.5 | 5.01 | 51%、1.73 tok/cycle |
 | DSpark 自前実装 (n_max 7, p_min 0.5) | 3009 tok | 38.6 | 5.03 | 51%、2.12 tok/cycle |
+| DSpark 自前実装 (n_max 7, p_min 0) | 158 tok | 11.4 | 2.78 | 20%、2.46 tok/cycle |
+| DSpark 自前実装 (n_max 7, p_min 0) | 158 tok (code) | 9.4 | 2.06 | 11% |
+| DSpark 自前実装 (n_max 7, p_min 0) | 3009 tok | 38.7 | 2.30 | 14% |
 
 3 モードとも生成テキストは一致（投機デコードはロスレス）。
+
+### 余っている VRAM の使い方（32 スレッド、128 トークン生成）
+| 構成 | short | code | long | GPU メモリ |
+|---|---|---|---|---|
+| 全 expert を CPU、24 スレッド（最初のベースライン） | 5.67 | 6.50 | 5.96 | 24.5 GB |
+| repack off、32 スレッド | 4.18※ | 5.78 | 5.08 | 24.5 GB |
+| repack off + `--moe-cache-mib 45000`（llama.cpp 内蔵の expert LRU キャッシュ） | 4.15 | 4.45 | 3.78 | 約 70 GB |
+| **repack on + 6 層分の expert を GPU に固定（`--n-cpu-moe 56`）** | **7.58** | **6.37** | **7.33** | 約 68 GB |
+
+※ 別ジョブと重なった計測。単位は decode tok/s。
+
+* llama.cpp master には Strata と同じ発想の **expert LRU キャッシュ（`--moe-cache-mib`、2026-10-07 マージ）** が既に入っている。
+  ただしこの構成では効かない: 1 トークンあたり各層 256 中 8 expert が選ばれ、キャッシュに入るのは全体の約 11% なのでほぼミスし、
+  ミス 1 件の PCIe 転送（29 MB、約 1.2 ms）が CPU で計算するコスト（約 0.35 ms）より高い。さらに repack カーネルを切る必要があり、それだけで約 15% 遅くなる。
+* 層単位で expert を GPU に固定する方が素直に効く。32 スレッド + 6 層 GPU で **7.3〜7.6 tok/s**（24 スレッド全 CPU 比 +30%）。
+  これを `run_muse_spark.sh` のデフォルト（THREADS=32, NCMOE=56）にした。
+* スレッド数: 16→4.6、24→5.5、32→7.2 tok/s（llama-bench、全 expert CPU）。48（全論理 CPU）は 0.25 tok/s に崩壊する。
+  計測中は艦隊の Blender レンダー 6 プロセスが約 8 コアを使っていたので、数値はすべて下限。
 
 ### わかったこと
 1. **動く。** GPU 側は約 24 GB（attention / dense FFN / embedding / lm_head、16K ctx）、expert 422 GiB はホスト RAM。

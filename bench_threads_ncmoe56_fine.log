@@ -1,0 +1,14 @@
+ggml_cuda_init: found 1 CUDA devices (Total VRAM: 81151 MiB):
+  Device 0: NVIDIA A100 80GB PCIe, compute capability 8.0, VMM: yes, VRAM: 81151 MiB
+| model                          |       size |     params | backend    | ngl |  n_cpu_moe | threads |  fa |         lm |            test |                  t/s |
+| ------------------------------ | ---------: | ---------: | ---------- | --: | ---------: | ------: | --: | ---------: | --------------: | -------------------: |
+| muse-spark 816B.A42B Q4_K - Small | 437.77 GiB |   819.99 B | CUDA       |  99 |         56 |      28 |   1 |       none |            pp32 |          5.83 ± 0.33 |
+| muse-spark 816B.A42B Q4_K - Small | 437.77 GiB |   819.99 B | CUDA       |  99 |         56 |      28 |   1 |       none |            tg32 |          5.99 ± 1.42 |
+| muse-spark 816B.A42B Q4_K - Small | 437.77 GiB |   819.99 B | CUDA       |  99 |         56 |      32 |   1 |       none |            pp32 |          5.39 ± 0.16 |
+| muse-spark 816B.A42B Q4_K - Small | 437.77 GiB |   819.99 B | CUDA       |  99 |         56 |      32 |   1 |       none |            tg32 |          6.07 ± 0.80 |
+| muse-spark 816B.A42B Q4_K - Small | 437.77 GiB |   819.99 B | CUDA       |  99 |         56 |      36 |   1 |       none |            pp32 |          5.50 ± 0.13 |
+| muse-spark 816B.A42B Q4_K - Small | 437.77 GiB |   819.99 B | CUDA       |  99 |         56 |      36 |   1 |       none |            tg32 |          7.34 ± 0.43 |
+| muse-spark 816B.A42B Q4_K - Small | 437.77 GiB |   819.99 B | CUDA       |  99 |         56 |      40 |   1 |       none |            pp32 |          5.66 ± 0.28 |
+| muse-spark 816B.A42B Q4_K - Small | 437.77 GiB |   819.99 B | CUDA       |  99 |         56 |      40 |   1 |       none |            tg32 |          6.23 ± 0.75 |
+
+build: 2851b3bcb (11675)

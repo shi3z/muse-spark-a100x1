@@ -83,3 +83,24 @@ http.client.RemoteDisconnected: Remote end closed connection without response
 7.37.234.779 I slot print_timing: id  1 | task 161 | draft acceptance = 0.50943 (   54 accepted /   106 generated), mean len =  2.12
 === compare done 03:36:24
 === dspark_pmin0 gpu2 03:42:28 
+[short] wall 59.6s prompt 158 tok @ 11.4 tok/s, decode 128 tok @ 2.78 tok/s, draft 73/364 accepted (20%) | 'We need to explain CRISPR gene editing in about 200 words. Should be concise. Probably ~18'
+[code] wall 63.9s prompt 158 tok @ 9.4 tok/s, decode 128 tok @ 2.06 tok/s, draft 55/489 accepted (11%) | 'We need to provide Rust code for thread-safe bounded blocking queue with short explanation'
+[long] wall 129.6s prompt 3009 tok @ 38.7 tok/s, decode 128 tok @ 2.30 tok/s, draft 61/441 accepted (14%) | 'We need to summarize policy in three sentences. The policy is 119 clauses: committee shall'
+4.42.848.759 I common_speculative_impl_draft_dflash: - block_size=7, mask_token_id=200018, n_extract=5, sample_from_anchor=true
+5.45.039.424 I slot print_timing: id  0 | task 0 | draft acceptance = 0.20055 (   73 accepted /   364 generated), mean len =  2.38
+6.48.958.184 I slot print_timing: id  0 | task 58 | draft acceptance = 0.11247 (   55 accepted /   489 generated), mean len =  1.77
+8.58.588.617 I slot print_timing: id  1 | task 134 | draft acceptance = 0.13832 (   61 accepted /   441 generated), mean len =  1.94
+=== compare done 03:46:42
+=== custom_t32_norepack gpu2 04:31:59 threads=32 ncmoe=62 flags='--no-repack'
+[short] wall 51.9s prompt 158 tok @ 7.4 tok/s, decode 128 tok @ 4.18 tok/s | 'We need to explain CRISPR gene editing in about 200 words. Should be concise. Probably ~18'
+[code] wall 24.6s prompt 158 tok @ 8.3 tok/s, decode 128 tok @ 5.78 tok/s | 'We need to provide Rust code for thread-safe bounded blocking queue with short explanation'
+[long] wall 99.3s prompt 3009 tok @ 38.8 tok/s, decode 128 tok @ 5.08 tok/s | 'We need to summarize policy in three sentences. The policy is 119 clauses: committee shall'
+=== custom_t32_norepack_moecache45g gpu2 04:41:55 threads=32 ncmoe=62 flags='--no-repack --moe-cache-mib 45000'
+[short] wall 45.5s prompt 158 tok @ 10.7 tok/s, decode 128 tok @ 4.15 tok/s | 'We need to explain CRISPR gene editing in about 200 words. Should be concise. Probably ~18'
+[code] wall 34.4s prompt 158 tok @ 3.7 tok/s, decode 128 tok @ 4.45 tok/s | 'We need to provide Rust code for thread-safe bounded blocking queue with short explanation'
+[long] wall 100.3s prompt 3009 tok @ 43.1 tok/s, decode 128 tok @ 3.78 tok/s | 'We need to summarize policy in three sentences. The policy is 119 clauses: committee shall'
+=== custom_t32_ncmoe56 gpu2 04:50:20 threads=32 ncmoe=56 flags=''
+[short] wall 28.2s prompt 158 tok @ 13.8 tok/s, decode 128 tok @ 7.58 tok/s | 'We need to explain CRISPR gene editing in about 200 words. Should be concise. Probably ~18'
+[code] wall 21.7s prompt 158 tok @ 12.7 tok/s, decode 128 tok @ 6.37 tok/s | 'We need to provide Rust code for thread-safe bounded blocking queue with short explanation'
+[long] wall 83.9s prompt 3009 tok @ 43.2 tok/s, decode 128 tok @ 7.33 tok/s | 'We need to summarize policy in three sentences. The policy is 119 clauses: committee shall'
+=== vram tests done 04:52:34

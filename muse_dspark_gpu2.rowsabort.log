@@ -1,0 +1,37 @@
+0.00.152.645 I srv  llama_server: initializing ...
+0.00.153.781 I cmn  common_param: common_params_print_info: verbosity = 3 (adjust with the `-lv N` CLI arg)
+0.00.154.381 W srv  llama_server: security: no API key is set and CORS allows all origins (see https://github.com/ggml-org/llama.cpp/pull/25655)
+0.00.161.128 I srv    load_model: loading model '/mnt/ssd/models/gguf/Muse-Spark-Open-816B-A42B-Q4_K_S/Muse-Spark-Open-816B-A42B-Q4_K_S-00001-of-00022.gguf'
+0.02.462.601 E llama_init_from_model: failed to initialize the context: dflash requires ctx_other to be set (this warning is normal during memory fitting)
+0.02.582.805 W operator(): failed to measure the memory of the extra model, fitting without it: failed to create llama_context from model
+0.03.028.608 W load: setting token '<|message|>' (200023) attribute to USER_DEFINED (16), old attributes: 8
+0.03.028.614 W load: setting token '<|start|>' (200022) attribute to USER_DEFINED (16), old attributes: 8
+4.29.593.315 I cmn          init: llama threadpool init, n_threads = 24
+4.30.018.254 I common_speculative_init_result: loading draft model '/mnt/ssd/models/gguf/Muse-Spark-drafts/Muse-Spark-Open-DSpark-BF16.gguf'
+4.30.692.087 W load: setting token '<|message|>' (200023) attribute to USER_DEFINED (16), old attributes: 8
+4.30.692.092 W load: setting token '<|start|>' (200022) attribute to USER_DEFINED (16), old attributes: 8
+4.32.608.097 I srv    load_model: initializing, n_slots = 4, n_ctx_slot = 16384, kv_unified = 'true'
+4.32.608.174 I common_speculative_impl_draft_dflash: adding speculative implementation 'draft-dspark'
+4.32.608.181 I common_speculative_impl_draft_dflash: - n_max=7, n_min=0, p_min=0.50
+4.32.608.183 I common_speculative_impl_draft_dflash: - block_size=7, mask_token_id=200018, n_extract=5, sample_from_anchor=true
+4.32.660.118 W srv          init: chat template supports preserving reasoning, it is enabled by default (may use more tokens, disable via --no-reasoning-preserve)
+4.32.660.189 I srv  llama_server: model loaded
+4.32.660.194 I srv  llama_server: listening on http://0.0.0.0:8020
+4.41.994.437 I slot get_availabl: id  0 | task -1 | selected slot by LRU, n_tokens = 0, t_last = -1
+4.41.996.929 I slot launch_slot_: id  0 | task 0 | processing task, is_child = 0
+/home/shi3z/llama.cpp-master/src/llama-context.cpp:2409: GGML_ASSERT(row_floats == model.hparams.n_embd) failed
+/home/shi3z/llama.cpp-master/build/bin/libggml-base.so.0(+0x16d5b)[0x7f1c25a83d5b]
+/home/shi3z/llama.cpp-master/build/bin/libggml-base.so.0(+0x171df)[0x7f1c25a841df]
+/home/shi3z/llama.cpp-master/build/bin/libggml-base.so.0(ggml_abort+0x152)[0x7f1c25a843b2]
+/home/shi3z/llama.cpp-master/build/bin/libllama.so.0(_ZN13llama_context20extract_layer_inputsEPK16llm_graph_resultmm+0x21a)[0x7f1c25d6962a]
+/home/shi3z/llama.cpp-master/build/bin/libllama.so.0(_ZN13llama_context6decodeERK15llama_batch_ext+0x61f)[0x7f1c25d7754f]
+/home/shi3z/llama.cpp-master/build/bin/libllama-server-impl.so(_ZNSt17_Function_handlerIFvvEZN19server_context_impl6decodeERiiEUlvE_E9_M_invokeERKSt9_Any_data+0x52)[0x7f1c26ce4f12]
+/home/shi3z/llama.cpp-master/build/bin/libllama-server-impl.so(_ZN12server_queue14yield_to_queueEOSt8functionIFvvEE+0xab)[0x7f1c26c9812b]
+/home/shi3z/llama.cpp-master/build/bin/libllama-server-impl.so(_ZN19server_context_impl6decodeERii+0x1bf)[0x7f1c26cfae8f]
+/home/shi3z/llama.cpp-master/build/bin/libllama-server-impl.so(_ZN19server_context_impl12update_slotsEv+0x536)[0x7f1c26d01a76]
+/home/shi3z/llama.cpp-master/build/bin/libllama-server-impl.so(_ZN12server_queue10start_loopEl+0x128)[0x7f1c26c98bb8]
+/home/shi3z/llama.cpp-master/build/bin/libllama-server-impl.so(_Z12llama_serverR13common_paramsiPPcR12server_child+0x4827)[0x7f1c26c41d67]
+/home/shi3z/llama.cpp-master/build/bin/libllama-server-impl.so(_Z12llama_serveriPPc+0x13a)[0x7f1c26c42f8a]
+/lib/x86_64-linux-gnu/libc.so.6(+0x29d90)[0x7f1c26671d90]
+/lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0x80)[0x7f1c26671e40]
+/home/shi3z/llama.cpp-master/build/bin/llama-server(+0x1295)[0x563762965295]

@@ -1,0 +1,23 @@
+0.00.177.143 I srv  llama_server: initializing ...
+0.00.179.322 I cmn  common_param: common_params_print_info: verbosity = 3 (adjust with the `-lv N` CLI arg)
+0.00.179.885 W srv  llama_server: security: no API key is set and CORS allows all origins (see https://github.com/ggml-org/llama.cpp/pull/25655)
+0.00.186.555 I srv    load_model: loading model '/mnt/ssd/models/gguf/Muse-Spark-Open-816B-A42B-Q4_K_S/Muse-Spark-Open-816B-A42B-Q4_K_S-00001-of-00022.gguf'
+0.02.505.051 E llama_init_from_model: failed to initialize the context: dflash requires ctx_other to be set (this warning is normal during memory fitting)
+0.02.633.597 W operator(): failed to measure the memory of the extra model, fitting without it: failed to create llama_context from model
+0.03.236.924 W load: setting token '<|message|>' (200023) attribute to USER_DEFINED (16), old attributes: 8
+0.03.236.929 W load: setting token '<|start|>' (200022) attribute to USER_DEFINED (16), old attributes: 8
+4.40.602.313 I cmn          init: llama threadpool init, n_threads = 24
+4.41.012.218 I common_speculative_init_result: loading draft model '/mnt/ssd/models/gguf/Muse-Spark-drafts/Muse-Spark-Open-DSpark-BF16.gguf'
+4.41.497.415 W load: setting token '<|message|>' (200023) attribute to USER_DEFINED (16), old attributes: 8
+4.41.497.420 W load: setting token '<|start|>' (200022) attribute to USER_DEFINED (16), old attributes: 8
+4.42.848.676 I srv    load_model: initializing, n_slots = 4, n_ctx_slot = 16384, kv_unified = 'true'
+4.42.848.752 I common_speculative_impl_draft_dflash: adding speculative implementation 'draft-dspark'
+4.42.848.757 I common_speculative_impl_draft_dflash: - n_max=7, n_min=0, p_min=0.00
+4.42.848.759 I common_speculative_impl_draft_dflash: - block_size=7, mask_token_id=200018, n_extract=5, sample_from_anchor=true
+4.42.889.108 W srv          init: chat template supports preserving reasoning, it is enabled by default (may use more tokens, disable via --no-reasoning-preserve)
+4.42.889.175 I srv  llama_server: model loaded
+4.42.889.182 I srv  llama_server: listening on http://0.0.0.0:8020
+4.45.494.836 I slot get_availabl: id  0 | task -1 | selected slot by LRU, n_tokens = 0, t_last = -1
+4.45.495.787 I slot launch_slot_: id  0 | task 0 | processing task, is_child = 0
+4.56.607.257 I slot print_timing: id  0 | task 0 | prompt processing, n_tokens =    138, progress = 0.87, t =  10.95 s / 12.61 tokens per second
+4.58.692.136 I slot print_timing: id  0 | task 0 | prompt processing, n_tokens =    154, progress = 0.97, t =  13.19 s / 11.68 tokens per second

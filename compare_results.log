@@ -1,0 +1,85 @@
+=== base 02:22:31
+[short] wall 497.7s prompt 158 tok @ 3.2 tok/s, decode 160 tok @ 0.36 tok/s | ''
+=== base gpu2 03:02:44 threads=24 numactl=interleave numa_balancing=0
+[short] wall 35.5s prompt 158 tok @ 12.1 tok/s, decode 128 tok @ 5.67 tok/s | ''
+[code] wall 21.8s prompt 158 tok @ 9.6 tok/s, decode 128 tok @ 6.50 tok/s | ''
+[long] wall 93.9s prompt 3009 tok @ 39.6 tok/s, decode 128 tok @ 5.96 tok/s | ''
+=== dflash: server failed to start
+error: invalid argument: --spec-draft-n-gpu-layers
+=== dspark: server failed to start
+error: invalid argument: --spec-draft-n-gpu-layers
+=== compare done 03:06:46
+=== dflash gpu2 03:11:51
+[short] wall 36.1s prompt 158 tok @ 11.7 tok/s, decode 128 tok @ 5.62 tok/s, draft 102/166 accepted (61%) | 'We need to explain CRISPR gene editing in about 200 words. Should be concise. Probably ~18'
+[code] wall 42.6s prompt 158 tok @ 8.6 tok/s, decode 128 tok @ 3.18 tok/s, draft 82/303 accepted (27%) | 'We need to provide Rust code for thread-safe bounded blocking queue with short explanation'
+[long] wall 96.4s prompt 3009 tok @ 39.2 tok/s, decode 128 tok @ 5.54 tok/s, draft 100/187 accepted (53%) | 'We need to summarize policy in three sentences. The policy is 119 clauses: committee shall'
+4.48.739.947 W common_speculative_impl_draft_dflash: requested draft size (n_max=16, n_min=0) exceeds the trained block size 8 -- clamping to 7
+5.31.607.783 I slot print_timing: id  0 | task 0 | draft acceptance = 0.61446 (  102 accepted /   166 generated), mean len =  5.25
+6.14.166.162 I slot print_timing: id  0 | task 29 | draft acceptance = 0.27063 (   82 accepted /   303 generated), mean len =  2.82
+7.50.555.468 I slot print_timing: id  1 | task 78 | draft acceptance = 0.53476 (  100 accepted /   187 generated), mean len =  4.70
+=== dspark gpu2 03:20:34
+Traceback (most recent call last):
+  File "/mnt/ssdraid/project/muse-spark/bench_client.py", line 14, in <module>
+    r = urllib.request.urlopen(urllib.request.Request(f"http://127.0.0.1:{PORT}/v1/chat/completions", data=json.dumps(req).encode(), headers={"Content-Type": "application/json"}), timeout=3600)
+  File "/usr/lib/python3.10/urllib/request.py", line 216, in urlopen
+    return opener.open(url, data, timeout)
+  File "/usr/lib/python3.10/urllib/request.py", line 519, in open
+    response = self._open(req, data)
+  File "/usr/lib/python3.10/urllib/request.py", line 536, in _open
+    result = self._call_chain(self.handle_open, protocol, protocol +
+  File "/usr/lib/python3.10/urllib/request.py", line 496, in _call_chain
+    result = func(*args)
+  File "/usr/lib/python3.10/urllib/request.py", line 1377, in http_open
+    return self.do_open(http.client.HTTPConnection, req)
+  File "/usr/lib/python3.10/urllib/request.py", line 1352, in do_open
+    r = h.getresponse()
+  File "/usr/lib/python3.10/http/client.py", line 1404, in getresponse
+    response.begin()
+  File "/usr/lib/python3.10/http/client.py", line 323, in begin
+    version, status, reason = self._read_status()
+  File "/usr/lib/python3.10/http/client.py", line 292, in _read_status
+    raise RemoteDisconnected("Remote end closed connection without"
+http.client.RemoteDisconnected: Remote end closed connection without response
+4.32.924.191 I common_speculative_init_result: loading draft model '/mnt/ssd/models/gguf/Muse-Spark-drafts/Muse-Spark-Open-DSpark-BF16.gguf'
+4.35.237.519 I common_speculative_impl_draft_dflash: adding speculative implementation 'draft-dspark'
+4.35.237.529 I common_speculative_impl_draft_dflash: - n_max=7, n_min=0, p_min=0.50
+4.35.237.532 I common_speculative_impl_draft_dflash: - block_size=7, mask_token_id=200018, n_extract=5, sample_from_anchor=true
+=== compare done 03:20:42
+=== dspark gpu2 03:27:32
+Traceback (most recent call last):
+  File "/mnt/ssdraid/project/muse-spark/bench_client.py", line 14, in <module>
+    r = urllib.request.urlopen(urllib.request.Request(f"http://127.0.0.1:{PORT}/v1/chat/completions", data=json.dumps(req).encode(), headers={"Content-Type": "application/json"}), timeout=3600)
+  File "/usr/lib/python3.10/urllib/request.py", line 216, in urlopen
+    return opener.open(url, data, timeout)
+  File "/usr/lib/python3.10/urllib/request.py", line 519, in open
+    response = self._open(req, data)
+  File "/usr/lib/python3.10/urllib/request.py", line 536, in _open
+    result = self._call_chain(self.handle_open, protocol, protocol +
+  File "/usr/lib/python3.10/urllib/request.py", line 496, in _call_chain
+    result = func(*args)
+  File "/usr/lib/python3.10/urllib/request.py", line 1377, in http_open
+    return self.do_open(http.client.HTTPConnection, req)
+  File "/usr/lib/python3.10/urllib/request.py", line 1352, in do_open
+    r = h.getresponse()
+  File "/usr/lib/python3.10/http/client.py", line 1404, in getresponse
+    response.begin()
+  File "/usr/lib/python3.10/http/client.py", line 323, in begin
+    version, status, reason = self._read_status()
+  File "/usr/lib/python3.10/http/client.py", line 292, in _read_status
+    raise RemoteDisconnected("Remote end closed connection without"
+http.client.RemoteDisconnected: Remote end closed connection without response
+4.30.018.254 I common_speculative_init_result: loading draft model '/mnt/ssd/models/gguf/Muse-Spark-drafts/Muse-Spark-Open-DSpark-BF16.gguf'
+4.32.608.174 I common_speculative_impl_draft_dflash: adding speculative implementation 'draft-dspark'
+4.32.608.181 I common_speculative_impl_draft_dflash: - n_max=7, n_min=0, p_min=0.50
+4.32.608.183 I common_speculative_impl_draft_dflash: - block_size=7, mask_token_id=200018, n_extract=5, sample_from_anchor=true
+=== compare done 03:27:51
+=== dspark gpu2 03:33:32
+[short] wall 44.1s prompt 158 tok @ 11.7 tok/s, decode 128 tok @ 4.16 tok/s, draft 66/179 accepted (37%) | 'We need to explain CRISPR gene editing in about 200 words. Should be concise. Probably ~18'
+[code] wall 27.9s prompt 158 tok @ 8.5 tok/s, decode 128 tok @ 5.01 tok/s, draft 35/69 accepted (51%) | 'We need to provide Rust code for thread-safe bounded blocking queue with short explanation'
+[long] wall 99.8s prompt 3009 tok @ 38.6 tok/s, decode 128 tok @ 5.03 tok/s, draft 54/106 accepted (51%) | 'We need to summarize policy in three sentences. The policy is 119 clauses: committee shall'
+4.38.605.707 I common_speculative_impl_draft_dflash: - block_size=7, mask_token_id=200018, n_extract=5, sample_from_anchor=true
+5.29.517.968 I slot print_timing: id  0 | task 0 | draft acceptance = 0.36872 (   66 accepted /   179 generated), mean len =  2.22
+5.57.454.674 I slot print_timing: id  0 | task 65 | draft acceptance = 0.50725 (   35 accepted /    69 generated), mean len =  1.73
+7.37.234.779 I slot print_timing: id  1 | task 161 | draft acceptance = 0.50943 (   54 accepted /   106 generated), mean len =  2.12
+=== compare done 03:36:24
+=== dspark_pmin0 gpu2 03:42:28 

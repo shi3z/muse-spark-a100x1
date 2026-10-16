@@ -1,0 +1,52 @@
+From 09f2c86f41172426d1a5dd1855f81f4aef59685f Mon Sep 17 00:00:00 2001
+From: shi3z <shi3z@me.com>
+Date: Fri, 16 Oct 2026 03:22:55 +0000
+Subject: [PATCH 2/2] muse-spark: expose the last layer's output as target
+ layer n_layer so DSpark drafts (target_layer_ids ending at 61, +1 convention)
+ can read it
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+---
+ src/models/muse-spark.cpp | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
+
+diff --git a/src/models/muse-spark.cpp b/src/models/muse-spark.cpp
+index 5842ecb98..fa441635e 100644
+--- a/src/models/muse-spark.cpp
++++ b/src/models/muse-spark.cpp
+@@ -93,6 +93,9 @@ llama_model_muse_spark::graph::graph(const llama_model & model, const llm_graph_
+ 
+     const float kq_scale = 1.0f / sqrtf(float(n_embd_head));
+ 
++    // DSpark drafts read the last layer's output as target layer n_layer (+1 convention): keep all rows until it is captured
++    const bool extract_final_inp = (size_t) n_layer < cparams.embeddings_layer_inp.size() && cparams.embeddings_layer_inp[n_layer];
++
+     for (int il = 0; il < n_layer; ++il) {
+         res->t_layer_inp[il] = inpL;
+ 
+@@ -158,7 +161,7 @@ llama_model_muse_spark::graph::graph(const llama_model & model, const llm_graph_
+         cur = ggml_rms_norm(ctx0, cur, hparams.f_post_norm_eps);
+         cb(cur, "attn_post_norm", il);
+ 
+-        if (il == n_layer - 1 && inp_out_ids) {
++        if (il == n_layer - 1 && inp_out_ids && !extract_final_inp) {
+             cur   = ggml_get_rows(ctx0,   cur, inp_out_ids);
+             inpSA = ggml_get_rows(ctx0, inpSA, inp_out_ids);
+         }
+@@ -216,6 +219,13 @@ llama_model_muse_spark::graph::graph(const llama_model & model, const llm_graph_
+ 
+     cur = inpL;
+ 
++    if (extract_final_inp) {
++        res->t_layer_inp[n_layer] = cur;
++        if (inp_out_ids) {
++            cur = ggml_get_rows(ctx0, cur, inp_out_ids);
++        }
++    }
++
+     cur = build_norm(cur, model.output_norm, NULL, LLM_NORM_RMS, -1);
+     cb(cur, "result_norm", -1);
+     res->t_embd = cur;
+-- 
+2.34.1
+

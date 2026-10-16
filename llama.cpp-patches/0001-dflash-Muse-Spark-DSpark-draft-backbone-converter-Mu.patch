@@ -1,0 +1,275 @@
+From 2cf52fa2cef84218f30fc948978d7598255cd89f Mon Sep 17 00:00:00 2001
+From: shi3z <shi3z@me.com>
+Date: Fri, 16 Oct 2026 02:22:19 +0000
+Subject: [PATCH 1/2] dflash: Muse Spark DSpark draft backbone (converter
+ MuseSparkDSparkModel + gated/normed attention, residual gates, scaled
+ post-FFN norm in the DFlash graph)
+
+---
+ conversion/__init__.py    |  1 +
+ conversion/muse_spark.py  | 98 +++++++++++++++++++++++++++++++++++++++
+ gguf-py/gguf/constants.py |  6 +++
+ src/models/dflash.cpp     | 59 ++++++++++++++++++++---
+ 4 files changed, 157 insertions(+), 7 deletions(-)
+
+diff --git a/conversion/__init__.py b/conversion/__init__.py
+index c2683aec4..151ad4390 100644
+--- a/conversion/__init__.py
++++ b/conversion/__init__.py
+@@ -67,6 +67,7 @@ TEXT_MODEL_MAP: dict[str, str] = {
+     "LingDSparkModel": "qwen",
+     "DeepseekV4ForCausalLM": "deepseek",
+     "DeepseekV4DSparkModel": "deepseek",
++    "MuseSparkDSparkModel": "muse_spark",
+     "DistilBertForMaskedLM": "bert",
+     "DistilBertForSequenceClassification": "bert",
+     "DistilBertModel": "bert",
+diff --git a/conversion/muse_spark.py b/conversion/muse_spark.py
+index 150f22f95..0b678e508 100644
+--- a/conversion/muse_spark.py
++++ b/conversion/muse_spark.py
+@@ -9,6 +9,7 @@ if TYPE_CHECKING:
+ 
+ from .base import ModelBase, MmprojModel, TextModel, gguf
+ from .muse_glimmer import MuseGlimmerVisionModel
++from .qwen import DSparkModel
+ 
+ 
+ # The reference clamps the squared stream coefficient with this floor.
+@@ -219,3 +220,100 @@ class MuseSparkVisionModel(MuseGlimmerVisionModel):
+             yield self._audio_tensor(data_torch, name, name.rpartition(".")[2])
+             return
+         yield from super().modify_tensors(data_torch, name, bid)
++
++
++@ModelBase.register("MuseSparkDSparkModel")
++@ModelBase.example("Inferact/Muse-Spark-Open-DSpark")
++class MuseSparkDSparkModel(DSparkModel):
++    """DSpark draft with a Muse Spark backbone (5 dense Muse decoder layers, conditioned on the target's hidden
++    states at target_layer_ids through fc + hidden_norm; Markov + confidence heads). Exported as the DFLASH arch;
++    the C++ side recognizes the Muse backbone by the attention gate / residual gate tensors."""
++    model_arch = gguf.MODEL_ARCH.DFLASH
++
++    # the draft config carries no MetaP scalars: these are the Muse Spark text defaults (transformers)
++    QK_SCALE_FACTOR = 5.4730064863875
++    OUTPUT_MULTIPLIER = 0.1767766952966369
++    RESIDUAL_GATE_TEMPERATURE = 0.3
++
++    def __init__(self, dir_model, *args, **kwargs):
++        hparams = kwargs.pop("hparams", None)
++        if hparams is None:
++            hparams = ModelBase.load_hparams(dir_model, False)
++        # the DFlash base reads rope settings through rope_parameters
++        hparams = {**hparams, "rope_parameters": hparams.get("rope_parameters") or {"rope_type": "default", "rope_theta": hparams["rope_theta"]},
++                   "rope_is_neox_style": True, "use_sliding_window": True}
++        super().__init__(dir_model, *args, hparams=hparams, **kwargs)
++        if self.hparams.get("markov_head_type", "vanilla") != "vanilla":
++            raise ValueError("Muse DSpark: only the vanilla Markov head is supported")
++        if (self.hparams.get("draft_vocab_size") or self.hparams["vocab_size"]) != self.hparams["vocab_size"]:
++            raise ValueError("Muse DSpark: a full draft vocabulary is required")
++
++    def set_gguf_parameters(self):
++        super().set_gguf_parameters()
++        hp = self.hparams
++        self.gguf_writer.add_head_count(hp["num_attention_heads"])
++        self.gguf_writer.add_head_count_kv(hp["num_key_value_heads"])
++        self.gguf_writer.add_key_length(hp["head_dim"])
++        self.gguf_writer.add_value_length(hp["head_dim"])
++        self.gguf_writer.add_rope_dimension_count(hp["head_dim"])
++        self.gguf_writer.add_rope_freq_base(hp["rope_theta"])
++        self.gguf_writer.add_layer_norm_rms_eps(hp["rms_norm_eps"])
++        self.gguf_writer.add_post_norm_eps(hp.get("rms_post_norm_eps", 1e-8))
++        self.gguf_writer.add_hidden_act("silu")
++        self.gguf_writer.add_logit_scale(hp.get("output_multiplier", self.OUTPUT_MULTIPLIER))
++        self.gguf_writer.add_final_logit_softcapping(hp.get("output_soft_cap_temp", 20.0))
++        # all draft stages are sliding-window layers
++        self.gguf_writer.add_sliding_window(hp["sliding_window"])
++        self.gguf_writer.add_sliding_window_pattern([t == "sliding_attention" for t in hp["layer_types"]])
++
++    @classmethod
++    def filter_tensors(cls, item):
++        name, gen = item
++        if name == "t2d":
++            return None
++        if not name.startswith("model."):
++            name = "model." + name
++        return (name, gen)
++
++    def modify_tensors(self, data_torch, name, bid):
++        if name == "model.d2t":
++            self._d2t = data_torch
++            return
++        if name.endswith("lm_head.weight"):
++            return  # full vocabulary: the frozen target head is shared at runtime
++        # delta norms (stored around zero, effective gain 1 + w)
++        if name.endswith((".pre_qkv_proj_norm.weight", ".pre_ffn_norm.weight", ".post_ffn_norm.weight", "model.hidden_norm.weight", "model.norm.weight")):
++            data_torch = data_torch.float() + 1.0
++        if name.endswith(".self_attn.pre_qkv_proj_norm.weight"):
++            yield self.format_tensor_name(gguf.MODEL_TENSOR.ATTN_NORM, bid), data_torch
++            return
++        if name.endswith(".self_attn.q_proj.weight"):
++            # HF rotate_half layout is kept: the DFLASH arch ropes NeoX-style
++            yield self.format_tensor_name(gguf.MODEL_TENSOR.ATTN_Q, bid), data_torch
++            head_dim = self.hparams["head_dim"]
++            ones = torch.ones(head_dim, dtype=torch.float32)
++            yield self.format_tensor_name(gguf.MODEL_TENSOR.ATTN_Q_NORM, bid), ones * self.hparams.get("qk_scale_factor", self.QK_SCALE_FACTOR)
++            yield self.format_tensor_name(gguf.MODEL_TENSOR.ATTN_K_NORM, bid), ones
++            return
++        if name.endswith(".self_attn.o_gate_proj.weight"):
++            yield self.format_tensor_name(gguf.MODEL_TENSOR.ATTN_GATE, bid), data_torch
++            return
++        if name.endswith((".add_attn.gate", ".add_ffn.gate")):
++            attn = ".add_attn." in name
++            w = data_torch.float() / self.hparams.get("residual_gate_temperature", self.RESIDUAL_GATE_TEMPERATURE)
++            beta = torch.sigmoid(w)
++            alpha = torch.sqrt(torch.clamp(torch.sigmoid(-w) * (1.0 + beta), min=RESIDUAL_GATE_EPS))
++            yield self.format_tensor_name(gguf.MODEL_TENSOR.ATTN_RESID_ALPHA if attn else gguf.MODEL_TENSOR.FFN_RESID_ALPHA, bid), alpha
++            yield self.format_tensor_name(gguf.MODEL_TENSOR.ATTN_RESID_BETA if attn else gguf.MODEL_TENSOR.FFN_RESID_BETA, bid), beta
++            return
++        if name.endswith(".pre_ffn_norm.weight"):
++            yield self.format_tensor_name(gguf.MODEL_TENSOR.FFN_NORM, bid), data_torch
++            return
++        if name.endswith(".post_ffn_norm.weight"):
++            yield self.format_tensor_name(gguf.MODEL_TENSOR.FFN_POST_NORM, bid), data_torch
++            return
++        if ".feed_forward." in name:
++            key = {"gate_proj": gguf.MODEL_TENSOR.FFN_GATE, "up_proj": gguf.MODEL_TENSOR.FFN_UP, "down_proj": gguf.MODEL_TENSOR.FFN_DOWN}[name.split(".feed_forward.")[1].split(".")[0]]
++            yield self.format_tensor_name(key, bid), data_torch
++            return
++        yield from super().modify_tensors(data_torch, name, bid)
+diff --git a/gguf-py/gguf/constants.py b/gguf-py/gguf/constants.py
+index 92a69bd57..7ec47008b 100644
+--- a/gguf-py/gguf/constants.py
++++ b/gguf-py/gguf/constants.py
+@@ -5591,6 +5591,12 @@ MODEL_TENSORS: dict[MODEL_ARCH, list[MODEL_TENSOR]] = {
+     MODEL_ARCH.DFLASH: [
+         MODEL_TENSOR.ATTN_POST_NORM,
+         MODEL_TENSOR.FFN_POST_NORM,
++        # Muse Spark backbone
++        MODEL_TENSOR.ATTN_GATE,
++        MODEL_TENSOR.ATTN_RESID_ALPHA,
++        MODEL_TENSOR.ATTN_RESID_BETA,
++        MODEL_TENSOR.FFN_RESID_ALPHA,
++        MODEL_TENSOR.FFN_RESID_BETA,
+         MODEL_TENSOR.LAYER_OUT_SCALE,
+         MODEL_TENSOR.ROPE_FREQS,
+         MODEL_TENSOR.TOKEN_EMBD,
+diff --git a/src/models/dflash.cpp b/src/models/dflash.cpp
+index 6f28d2f1d..495fdbc09 100644
+--- a/src/models/dflash.cpp
++++ b/src/models/dflash.cpp
+@@ -4,6 +4,8 @@
+ #include "llama-kv-cache.h"
+ #include "llama-kv-cache-iswa.h"
+ 
++#include <cstdlib>
++
+ void llama_model_dflash::load_arch_hparams(llama_model_loader & ml) {
+ 
+     ml.get_key(LLM_KV_EMBEDDING_SCALE, hparams.f_embedding_scale, false);
+@@ -21,6 +23,7 @@ void llama_model_dflash::load_arch_hparams(llama_model_loader & ml) {
+     }
+ 
+     ml.get_key(LLM_KV_ATTENTION_LAYERNORM_RMS_EPS, hparams.f_norm_rms_eps);
++    ml.get_key(LLM_KV_POST_NORM_EPS,               hparams.f_post_norm_eps, false); // Muse Spark backbone
+     ml.get_key(LLM_KV_LOGIT_SCALE,                 hparams.f_logit_scale, false);
+     hparams.f_final_logit_softcapping = 0.0f;
+     ml.get_key(LLM_KV_FINAL_LOGIT_SOFTCAPPING,     hparams.f_final_logit_softcapping, false);
+@@ -310,6 +313,15 @@ void llama_model_dflash::load_arch_tensors(llama_model_loader &) {
+ 
+         layer.attn_post_norm = create_tensor(tn(LLM_TENSOR_ATTN_POST_NORM, "weight", i), { n_embd }, TENSOR_NOT_REQUIRED);
+         layer.ffn_post_norm  = create_tensor(tn(LLM_TENSOR_FFN_POST_NORM,  "weight", i), { n_embd }, TENSOR_NOT_REQUIRED);
++        // Muse Spark backbone (optional): attention output gate, norm-preserving residual gates
++        layer.wqkv_gate        = create_tensor(tn(LLM_TENSOR_ATTN_GATE,        "weight", i), { n_embd, n_embd_head_k * n_head }, TENSOR_NOT_REQUIRED);
++        layer.attn_resid_alpha = create_tensor(tn(LLM_TENSOR_ATTN_RESID_ALPHA, "weight", i), { n_embd }, TENSOR_NOT_REQUIRED);
++        layer.attn_resid_beta  = create_tensor(tn(LLM_TENSOR_ATTN_RESID_BETA,  "weight", i), { n_embd }, TENSOR_NOT_REQUIRED);
++        layer.ffn_resid_alpha  = create_tensor(tn(LLM_TENSOR_FFN_RESID_ALPHA,  "weight", i), { n_embd }, TENSOR_NOT_REQUIRED);
++        layer.ffn_resid_beta   = create_tensor(tn(LLM_TENSOR_FFN_RESID_BETA,   "weight", i), { n_embd }, TENSOR_NOT_REQUIRED);
++        if (layer.wqkv_gate && !(layer.attn_resid_alpha && layer.attn_resid_beta && layer.ffn_resid_alpha && layer.ffn_resid_beta && layer.ffn_post_norm)) {
++            throw std::runtime_error("Muse Spark DFlash backbone requires residual gates and ffn_post_norm");
++        }
+         layer.out_scale      = create_tensor(tn(LLM_TENSOR_LAYER_OUT_SCALE, "weight", i), { 1 }, TENSOR_NOT_REQUIRED);
+         layer.rope_freqs     = create_tensor(tn(LLM_TENSOR_ROPE_FREQS, "weight", i), { n_embd_head_k/2 }, TENSOR_NOT_REQUIRED | (i > 0 ? TENSOR_DUPLICATED : 0));
+ 
+@@ -948,6 +960,13 @@ llama_model_dflash::graph<false>::graph(const llama_model & model, const llm_gra
+     if (hparams.f_embedding_scale != 0.0f) {
+         inpL = ggml_scale(ctx0, inpL, hparams.f_embedding_scale);
+     }
++    if (model.layers[0].wqkv_gate != nullptr) {
++        // Muse Spark backbone: the target norms its token embeddings (weightless RMS); LLAMA_DFLASH_MUSE_EMBD_NORM=0 disables
++        static const bool embd_norm = [] { const char * e = getenv("LLAMA_DFLASH_MUSE_EMBD_NORM"); return e == nullptr || atoi(e) != 0; }();
++        if (embd_norm) {
++            inpL = ggml_rms_norm(ctx0, inpL, hparams.f_norm_rms_eps);
++        }
++    }
+     cb(inpL, "inp_noise_embd", -1);
+ 
+     for (int il = 0; il < n_layer; ++il) {
+@@ -984,10 +1003,26 @@ llama_model_dflash::graph<false>::graph(const llama_model & model, const llm_gra
+         cb(Kcur, "Kcur", il);
+         cb(Vcur, "Vcur", il);
+ 
++        const bool muse = layer.wqkv_gate != nullptr;   // Muse Spark backbone: gated, normed attention output + residual gates
++
+         // cache-aware, non-causal attention
+         ggml_tensor * cur = use_iswa
+-            ? build_attn(inp_attn_iswa, layer.wo, NULL, layer.wo_s, Qcur, Kcur, Vcur, nullptr, layer.attn_sinks, nullptr, kq_scale, il)
+-            : build_attn(inp_attn,      layer.wo, NULL, layer.wo_s, Qcur, Kcur, Vcur, nullptr, layer.attn_sinks, nullptr, kq_scale, il);
++            ? build_attn(inp_attn_iswa, muse ? NULL : layer.wo, NULL, muse ? NULL : layer.wo_s, Qcur, Kcur, Vcur, nullptr, layer.attn_sinks, nullptr, kq_scale, il)
++            : build_attn(inp_attn,      muse ? NULL : layer.wo, NULL, muse ? NULL : layer.wo_s, Qcur, Kcur, Vcur, nullptr, layer.attn_sinks, nullptr, kq_scale, il);
++
++        if (muse) {
++            // weightless per-head RMS norm of the attention output, sigmoid gate from the normed input, then o_proj
++            cur = ggml_reshape_3d(ctx0, cur, n_embd_head, n_head, n_tokens);
++            cur = ggml_rms_norm(ctx0, cur, hparams.f_norm_rms_eps);
++            cur = ggml_reshape_2d(ctx0, cur, n_embd_head * n_head, n_tokens);
++            ggml_tensor * gate = build_lora_mm(layer.wqkv_gate, noise_norm, layer.wqkv_gate_s);
++            cur = ggml_mul(ctx0, cur, ggml_sigmoid(ctx0, gate));
++            cb(cur, "attn_gated", il);
++            cur = build_lora_mm(layer.wo, cur, layer.wo_s);
++            // weightless post-attention norm, then the norm-preserving residual gate
++            cur = ggml_rms_norm(ctx0, cur, hparams.f_post_norm_eps);
++            cb(cur, "attn_post_norm", il);
++        }
+ 
+         if (hparams.f_attn_value_scale != 0.0f) {
+             cur = ggml_scale(ctx0, cur, hparams.f_attn_value_scale);
+@@ -1004,7 +1039,9 @@ llama_model_dflash::graph<false>::graph(const llama_model & model, const llm_gra
+             cb(cur, "attn_post_norm", il);
+         }
+ 
+-        ggml_tensor * ffn_inp = ggml_add(ctx0, cur, inpL);
++        ggml_tensor * ffn_inp = muse
++            ? ggml_add(ctx0, ggml_mul(ctx0, inpL, layer.attn_resid_alpha), ggml_mul(ctx0, cur, layer.attn_resid_beta))
++            : ggml_add(ctx0, cur, inpL);
+         cb(ffn_inp, "ffn_inp", il);
+ 
+         cur = build_norm(ffn_inp, layer.ffn_norm, NULL, LLM_NORM_RMS, il);
+@@ -1030,12 +1067,20 @@ llama_model_dflash::graph<false>::graph(const llama_model & model, const llm_gra
+             cb(cur, "ffn_conv_out", il);
+         }
+ 
+-        if (layer.ffn_post_norm) {
+-            cur = build_norm(cur, layer.ffn_post_norm, NULL, LLM_NORM_RMS, il);
++        if (muse) {
++            // Muse post-FFN norm: scale by the (delta-folded) weight, then a weightless norm
++            cur = ggml_mul(ctx0, cur, layer.ffn_post_norm);
++            cur = ggml_rms_norm(ctx0, cur, hparams.f_post_norm_eps);
+             cb(cur, "ffn_post_norm", il);
+-        }
++            cur = ggml_add(ctx0, ggml_mul(ctx0, ffn_inp, layer.ffn_resid_alpha), ggml_mul(ctx0, cur, layer.ffn_resid_beta));
++        } else {
++            if (layer.ffn_post_norm) {
++                cur = build_norm(cur, layer.ffn_post_norm, NULL, LLM_NORM_RMS, il);
++                cb(cur, "ffn_post_norm", il);
++            }
+ 
+-        cur = ggml_add(ctx0, cur, ffn_inp);
++            cur = ggml_add(ctx0, cur, ffn_inp);
++        }
+         if (layer.out_scale) {
+             cur = ggml_mul(ctx0, cur, layer.out_scale);
+         }
+-- 
+2.34.1
+

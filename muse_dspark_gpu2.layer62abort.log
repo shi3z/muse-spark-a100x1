@@ -1,0 +1,40 @@
+0.00.176.585 I srv  llama_server: initializing ...
+0.00.177.723 I cmn  common_param: common_params_print_info: verbosity = 3 (adjust with the `-lv N` CLI arg)
+0.00.178.325 W srv  llama_server: security: no API key is set and CORS allows all origins (see https://github.com/ggml-org/llama.cpp/pull/25655)
+0.00.184.776 I srv    load_model: loading model '/mnt/ssd/models/gguf/Muse-Spark-Open-816B-A42B-Q4_K_S/Muse-Spark-Open-816B-A42B-Q4_K_S-00001-of-00022.gguf'
+0.02.532.286 E llama_init_from_model: failed to initialize the context: dflash requires ctx_other to be set (this warning is normal during memory fitting)
+0.02.661.096 W operator(): failed to measure the memory of the extra model, fitting without it: failed to create llama_context from model
+0.03.276.280 W load: setting token '<|message|>' (200023) attribute to USER_DEFINED (16), old attributes: 8
+0.03.276.285 W load: setting token '<|start|>' (200022) attribute to USER_DEFINED (16), old attributes: 8
+4.32.496.412 I cmn          init: llama threadpool init, n_threads = 24
+4.32.924.191 I common_speculative_init_result: loading draft model '/mnt/ssd/models/gguf/Muse-Spark-drafts/Muse-Spark-Open-DSpark-BF16.gguf'
+4.33.592.631 W load: setting token '<|message|>' (200023) attribute to USER_DEFINED (16), old attributes: 8
+4.33.592.637 W load: setting token '<|start|>' (200022) attribute to USER_DEFINED (16), old attributes: 8
+4.35.237.430 I srv    load_model: initializing, n_slots = 4, n_ctx_slot = 16384, kv_unified = 'true'
+4.35.237.519 I common_speculative_impl_draft_dflash: adding speculative implementation 'draft-dspark'
+4.35.237.529 I common_speculative_impl_draft_dflash: - n_max=7, n_min=0, p_min=0.50
+4.35.237.532 I common_speculative_impl_draft_dflash: - block_size=7, mask_token_id=200018, n_extract=5, sample_from_anchor=true
+4.35.290.018 W srv          init: chat template supports preserving reasoning, it is enabled by default (may use more tokens, disable via --no-reasoning-preserve)
+4.35.290.085 I srv  llama_server: model loaded
+4.35.290.091 I srv  llama_server: listening on http://0.0.0.0:8020
+4.44.601.681 I slot get_availabl: id  0 | task -1 | selected slot by LRU, n_tokens = 0, t_last = -1
+4.44.603.448 I slot launch_slot_: id  0 | task 0 | processing task, is_child = 0
+/home/shi3z/llama.cpp-master/src/llama-graph.cpp:1437: GGML_ASSERT(t_layer_inp[il] != nullptr && "layer input tensor is null") failed
+/home/shi3z/llama.cpp-master/build/bin/libggml-base.so.0(+0x16d5b)[0x7f9294928d5b]
+/home/shi3z/llama.cpp-master/build/bin/libggml-base.so.0(+0x171df)[0x7f92949291df]
+/home/shi3z/llama.cpp-master/build/bin/libggml-base.so.0(ggml_abort+0x152)[0x7f92949293b2]
+/home/shi3z/llama.cpp-master/build/bin/libllama.so.0(+0x262ec2)[0x7f9294c4aec2]
+/home/shi3z/llama.cpp-master/build/bin/libllama.so.0(_ZNK11llama_model11build_graphERK16llm_graph_params+0xa0)[0x7f9294cea020]
+/home/shi3z/llama.cpp-master/build/bin/libllama.so.0(_ZN13llama_context13graph_reserveEjjjPK22llama_memory_context_ibPm+0x4ef)[0x7f9294c1528f]
+/home/shi3z/llama.cpp-master/build/bin/libllama.so.0(_ZN13llama_context13sched_reserveEv+0x78d)[0x7f9294c17f3d]
+/home/shi3z/llama.cpp-master/build/bin/libllama.so.0(_ZN13llama_context6decodeERK15llama_batch_ext+0x2e0)[0x7f9294c1c1f0]
+/home/shi3z/llama.cpp-master/build/bin/libllama-server-impl.so(_ZNSt17_Function_handlerIFvvEZN19server_context_impl6decodeERiiEUlvE_E9_M_invokeERKSt9_Any_data+0x52)[0x7f9295b89f12]
+/home/shi3z/llama.cpp-master/build/bin/libllama-server-impl.so(_ZN12server_queue14yield_to_queueEOSt8functionIFvvEE+0xab)[0x7f9295b3d12b]
+/home/shi3z/llama.cpp-master/build/bin/libllama-server-impl.so(_ZN19server_context_impl6decodeERii+0x1bf)[0x7f9295b9fe8f]
+/home/shi3z/llama.cpp-master/build/bin/libllama-server-impl.so(_ZN19server_context_impl12update_slotsEv+0x536)[0x7f9295ba6a76]
+/home/shi3z/llama.cpp-master/build/bin/libllama-server-impl.so(_ZN12server_queue10start_loopEl+0x128)[0x7f9295b3dbb8]
+/home/shi3z/llama.cpp-master/build/bin/libllama-server-impl.so(_Z12llama_serverR13common_paramsiPPcR12server_child+0x4827)[0x7f9295ae6d67]
+/home/shi3z/llama.cpp-master/build/bin/libllama-server-impl.so(_Z12llama_serveriPPc+0x13a)[0x7f9295ae7f8a]
+/lib/x86_64-linux-gnu/libc.so.6(+0x29d90)[0x7f9295516d90]
+/lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0x80)[0x7f9295516e40]
+/home/shi3z/llama.cpp-master/build/bin/llama-server(+0x1295)[0x564cdd9f8295]

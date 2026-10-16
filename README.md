@@ -45,7 +45,7 @@ llama.cpp master の `--n-cpu-moe` で実現しています。
 * スレッド数: 16→4.6、24→5.5、32→7.2 tok/s（llama-bench、全 expert CPU）。48（全論理 CPU）は 0.25 tok/s に崩壊する。
   計測中は艦隊の Blender レンダー 6 プロセスが約 8 コアを使っていたので、数値はすべて下限。
 
-### 静的 hot-expert 分割（自作、llama.cpp パッチ 0004）— 現時点の最速: **8.3〜9.2 tok/s**
+### 静的 hot-expert 分割（自作、llama.cpp パッチ 0004〜0006）— 現時点の最速: **8.3〜9.2 tok/s**
 ルーティングは強く偏っている（各層 256 中の上位 27 expert が選択の 60〜69% を占める）。そこで「よく選ばれる expert を
 GPU に複製し、CPU 側はそのスロットをスキップする」静的分割を実装した（`LLAMA_MOE_HOT_LIST=hot_list.csv`）。
 

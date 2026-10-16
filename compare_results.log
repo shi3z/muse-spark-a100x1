@@ -166,3 +166,10 @@ http.client.RemoteDisconnected: Remote end closed connection without response
 [short] wall 26.1s prompt 158 tok @ 12.9 tok/s, decode 128 tok @ 9.18 tok/s | 'We need to explain CRISPR gene editing in about 200 words. Should be concise. Probably ~18'
 [code] wall 17.3s prompt 158 tok @ 11.2 tok/s, decode 128 tok @ 8.28 tok/s | 'We need to provide Rust code for thread-safe bounded blocking queue with short explanation'
 [long] wall 87.7s prompt 3009 tok @ 39.7 tok/s, decode 128 tok @ 8.41 tok/s | 'We need to summarize policy in three sentences. The policy is 119 clauses: committee shall'
+=== custom_hot2gpu120g 2gpu(2,3) 14:02:33 threads=32 ncmoe=62 env='LLAMA_MOE_HOT_LIST=/mnt/ssdraid/project/muse-spark/hot_list_2gpu120g.csv GGML_MMID_STATS=1' flags='-ts 31,31'
+2, 75577 MiB
+3, 66409 MiB
+[short] wall 23.0s prompt 158 tok @ 12.6 tok/s, decode 128 tok @ 12.19 tok/s | 'We need to explain CRISPR gene editing in about 200 words. Should be concise. Probably ~18'
+[code] wall 12.9s prompt 158 tok @ 12.5 tok/s, decode 128 tok @ 11.47 tok/s | 'We need to provide Rust code for thread-safe bounded blocking queue with short explanation'
+[long] wall 84.5s prompt 3009 tok @ 39.4 tok/s, decode 128 tok @ 11.05 tok/s | 'We need to summarize policy in three sentences. The policy is 119 clauses: committee shall'
+rows per host matmul: 3.15

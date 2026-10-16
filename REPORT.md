@@ -154,3 +154,16 @@ saved nothing (8.00 rows per matmul either way). Skipping the slot in the kernel
 Where the next gains are: more VRAM coverage is the straight path (a second A100 would hold ~2/3 of the selections),
 a cheaper host kernel (the repacked Q4_K path, never active here because the experts sit in the CUDA pinned buffer; or
 AMX int8), and the 38 ms fixed part (62 GPU<->CPU hand-offs per token).
+
+## Two A100s (GPUs 2 and 3, `-ts 31,31`, 32 threads, 128 tokens)
+Layers 0-30 run on GPU 2 and 31-61 on GPU 3; each GPU holds its half of the dense weights plus 60 GiB of its layers' hottest
+experts (`hot_list_2gpu120g.csv`: 4,252 experts, built from two decode histograms, 30 prompts x 100-120 tokens; it covers
+73.6% of the training selections and 71.6% of the held-out benchmark prompts' selections). GPU memory: 75.6 GB / 66.4 GB.
+
+| config | rows / host matmul | short | code | long |
+|---|---|---|---|---|
+| 1 GPU, hot split 42 GiB | 4.34 | 9.18 | 8.28 | 8.41 |
+| **2 GPUs, hot split 2 x 60 GiB** | **3.15** | **12.19** | **11.47** | **11.05** |
+
+Output identical to the plain run. The token is now ~82-90 ms of which ~38 ms is the fixed part (attention, dense FFN,
+62 GPU<->CPU hand-offs), so further hot-expert coverage has diminishing returns: the next lever is that fixed part.

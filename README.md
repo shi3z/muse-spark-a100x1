@@ -107,3 +107,15 @@ GPU に複製し、CPU 側はそのスロットをスキップする」静的分
 ## 環境
 2x Xeon Silver 4410Y（24 コア、AMX）、1.76 TB RAM、A100 80GB PCIe x8（うち 1 枚使用）、
 llama.cpp master build 11675（CUDA sm80 + AMX）、重みは ggml-org の Q4_K_S GGUF（22 シャード、438 GiB）。
+
+## A100 x2（GPU 2,3）
+層 0〜30 を GPU 2、31〜61 を GPU 3 に置き（`-ts 31,31`）、各 GPU に dense 重みの半分 + その層群の hot expert 60 GiB
+（計 4,252 expert、decode 由来のヒストグラム 30 プロンプト分から生成、held-out カバレッジ 72%）。
+
+| 構成 | CPU 行列積あたりの行数 | short | code | long |
+|---|---|---|---|---|
+| A100 x1、hot 分割 42 GiB | 4.34 | 9.18 | 8.28 | 8.41 |
+| **A100 x2、hot 分割 60 GiB x2** | **3.15** | **12.19** | **11.47** | **11.05** |
+
+出力は通常実行と一致。1 トークン ≈ 82〜90 ms のうち約 38 ms が固定部分（attention、dense FFN、62 回の GPU↔CPU 往復）なので、
+これ以上 expert を GPU に載せても伸びは鈍る。次は固定部分の削減。

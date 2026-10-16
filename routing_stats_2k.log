@@ -1,70 +1,70 @@
-0.02.400.644 W load: setting token '<|message|>' (200023) attribute to USER_DEFINED (16), old attributes: 8
-0.02.400.650 W load: setting token '<|start|>' (200022) attribute to USER_DEFINED (16), old attributes: 8
-8.38.057.469 I cmn          init: llama threadpool init, n_threads = 32
-8.38.078.734 I number of input tokens = 2032
-8.55.785.864 I processed 512 / 2032 tokens
-9.13.146.468 I processed 1024 / 2032 tokens
-9.26.793.646 I processed 1536 / 2032 tokens
-9.39.712.163 I processed 2032 / 2032 tokens
-layer   0: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer   1: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer   2: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer   3: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer   4: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer   5: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer   6: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer   7: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer   8: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer   9: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer  10: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer  11: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer  12: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer  13: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer  14: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer  15: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer  16: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer  17: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer  18: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer  19: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer  20: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer  21: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer  22: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer  23: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer  24: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer  25: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer  26: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer  27: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer  28: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer  29: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer  30: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer  31: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer  32: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer  33: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer  34: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer  35: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer  36: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer  37: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer  38: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer  39: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer  40: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer  41: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer  42: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer  43: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer  44: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer  45: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer  46: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer  47: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer  48: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer  49: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer  50: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer  51: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer  52: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer  53: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer  54: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer  55: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer  56: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer  57: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer  58: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer  59: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
-layer  60: 256 experts, 16256 selections, share of top-16 6.3%, top-32 12.6%, top-64 25.2%, top-128 50.4%
+0.02.330.255 W load: setting token '<|message|>' (200023) attribute to USER_DEFINED (16), old attributes: 8
+0.02.330.260 W load: setting token '<|start|>' (200022) attribute to USER_DEFINED (16), old attributes: 8
+4.42.961.744 I cmn          init: llama threadpool init, n_threads = 32
+4.42.973.111 I number of input tokens = 2032
+4.56.457.255 I processed 512 / 2032 tokens
+5.09.307.177 I processed 1024 / 2032 tokens
+5.22.372.792 I processed 1536 / 2032 tokens
+5.34.812.831 I processed 2032 / 2032 tokens
+layer   0: 256 experts, 16256 selections, share of top-16 19.2%, top-32 32.2%, top-64 52.6%, top-128 80.4%
+layer   1: 256 experts, 16256 selections, share of top-16 20.0%, top-32 32.9%, top-64 53.8%, top-128 82.4%
+layer   2: 256 experts, 16256 selections, share of top-16 19.5%, top-32 30.7%, top-64 49.1%, top-128 76.5%
+layer   3: 256 experts, 16256 selections, share of top-16 21.3%, top-32 34.1%, top-64 53.9%, top-128 80.6%
+layer   4: 256 experts, 16256 selections, share of top-16 28.2%, top-32 42.3%, top-64 61.8%, top-128 85.4%
+layer   5: 256 experts, 16256 selections, share of top-16 43.1%, top-32 57.0%, top-64 73.6%, top-128 92.0%
+layer   6: 256 experts, 16256 selections, share of top-16 31.1%, top-32 45.2%, top-64 64.7%, top-128 89.7%
+layer   7: 255 experts, 16256 selections, share of top-16 27.2%, top-32 41.8%, top-64 61.2%, top-128 87.2%
+layer   8: 255 experts, 16256 selections, share of top-16 36.5%, top-32 51.9%, top-64 72.3%, top-128 92.3%
+layer   9: 256 experts, 16256 selections, share of top-16 44.4%, top-32 62.0%, top-64 81.1%, top-128 96.9%
+layer  10: 256 experts, 16256 selections, share of top-16 55.1%, top-32 71.1%, top-64 85.7%, top-128 97.1%
+layer  11: 256 experts, 16256 selections, share of top-16 52.1%, top-32 71.6%, top-64 87.6%, top-128 98.0%
+layer  12: 256 experts, 16256 selections, share of top-16 36.3%, top-32 51.6%, top-64 70.7%, top-128 92.1%
+layer  13: 254 experts, 16256 selections, share of top-16 55.8%, top-32 71.3%, top-64 87.1%, top-128 98.1%
+layer  14: 255 experts, 16256 selections, share of top-16 46.6%, top-32 62.9%, top-64 79.9%, top-128 95.1%
+layer  15: 255 experts, 16256 selections, share of top-16 66.6%, top-32 81.0%, top-64 92.8%, top-128 99.2%
+layer  16: 255 experts, 16256 selections, share of top-16 45.0%, top-32 60.4%, top-64 78.7%, top-128 95.5%
+layer  17: 255 experts, 16256 selections, share of top-16 41.4%, top-32 57.6%, top-64 76.7%, top-128 95.3%
+layer  18: 256 experts, 16256 selections, share of top-16 58.6%, top-32 71.4%, top-64 86.4%, top-128 98.2%
+layer  19: 256 experts, 16256 selections, share of top-16 54.0%, top-32 70.3%, top-64 85.6%, top-128 97.8%
+layer  20: 256 experts, 16256 selections, share of top-16 39.5%, top-32 52.7%, top-64 72.1%, top-128 93.6%
+layer  21: 256 experts, 16256 selections, share of top-16 62.5%, top-32 76.6%, top-64 89.5%, top-128 98.2%
+layer  22: 256 experts, 16256 selections, share of top-16 71.6%, top-32 90.4%, top-64 97.9%, top-128 99.9%
+layer  23: 256 experts, 16256 selections, share of top-16 74.8%, top-32 87.7%, top-64 96.5%, top-128 99.9%
+layer  24: 256 experts, 16256 selections, share of top-16 85.7%, top-32 92.1%, top-64 96.9%, top-128 99.8%
+layer  25: 256 experts, 16256 selections, share of top-16 81.2%, top-32 90.9%, top-64 97.7%, top-128 99.8%
+layer  26: 256 experts, 16256 selections, share of top-16 38.8%, top-32 53.1%, top-64 72.5%, top-128 93.7%
+layer  27: 256 experts, 16256 selections, share of top-16 45.8%, top-32 61.8%, top-64 81.3%, top-128 96.2%
+layer  28: 256 experts, 16256 selections, share of top-16 54.3%, top-32 71.3%, top-64 86.7%, top-128 97.5%
+layer  29: 256 experts, 16256 selections, share of top-16 52.8%, top-32 70.6%, top-64 87.3%, top-128 98.3%
+layer  30: 256 experts, 16256 selections, share of top-16 65.6%, top-32 82.8%, top-64 94.8%, top-128 99.5%
+layer  31: 256 experts, 16256 selections, share of top-16 61.3%, top-32 77.4%, top-64 89.6%, top-128 98.2%
+layer  32: 255 experts, 16256 selections, share of top-16 69.7%, top-32 85.3%, top-64 95.4%, top-128 99.7%
+layer  33: 256 experts, 16256 selections, share of top-16 64.2%, top-32 79.4%, top-64 89.7%, top-128 98.0%
+layer  34: 256 experts, 16256 selections, share of top-16 69.7%, top-32 86.6%, top-64 96.2%, top-128 99.6%
+layer  35: 256 experts, 16256 selections, share of top-16 66.5%, top-32 83.3%, top-64 93.4%, top-128 99.0%
+layer  36: 256 experts, 16256 selections, share of top-16 73.2%, top-32 86.8%, top-64 96.1%, top-128 99.7%
+layer  37: 256 experts, 16256 selections, share of top-16 71.2%, top-32 86.9%, top-64 96.3%, top-128 99.8%
+layer  38: 255 experts, 16256 selections, share of top-16 70.5%, top-32 89.7%, top-64 97.3%, top-128 99.9%
+layer  39: 254 experts, 16256 selections, share of top-16 67.7%, top-32 86.8%, top-64 96.6%, top-128 99.9%
+layer  40: 255 experts, 16256 selections, share of top-16 68.4%, top-32 85.7%, top-64 96.6%, top-128 99.8%
+layer  41: 255 experts, 16256 selections, share of top-16 66.3%, top-32 84.5%, top-64 95.6%, top-128 99.5%
+layer  42: 256 experts, 16256 selections, share of top-16 77.4%, top-32 91.0%, top-64 97.1%, top-128 99.6%
+layer  43: 256 experts, 16256 selections, share of top-16 73.8%, top-32 90.5%, top-64 97.5%, top-128 99.7%
+layer  44: 256 experts, 16256 selections, share of top-16 69.5%, top-32 84.7%, top-64 95.2%, top-128 99.5%
+layer  45: 255 experts, 16256 selections, share of top-16 75.7%, top-32 90.8%, top-64 97.3%, top-128 99.7%
+layer  46: 256 experts, 16256 selections, share of top-16 61.4%, top-32 81.6%, top-64 96.0%, top-128 99.7%
+layer  47: 256 experts, 16256 selections, share of top-16 69.7%, top-32 84.3%, top-64 94.1%, top-128 99.1%
+layer  48: 256 experts, 16256 selections, share of top-16 61.5%, top-32 81.6%, top-64 93.2%, top-128 99.1%
+layer  49: 253 experts, 16256 selections, share of top-16 70.8%, top-32 86.1%, top-64 95.0%, top-128 99.1%
+layer  50: 255 experts, 16256 selections, share of top-16 60.2%, top-32 77.4%, top-64 90.0%, top-128 98.3%
+layer  51: 255 experts, 16256 selections, share of top-16 73.4%, top-32 85.1%, top-64 94.1%, top-128 98.9%
+layer  52: 256 experts, 16256 selections, share of top-16 70.9%, top-32 86.4%, top-64 94.2%, top-128 98.8%
+layer  53: 255 experts, 16256 selections, share of top-16 71.4%, top-32 85.1%, top-64 93.8%, top-128 99.0%
+layer  54: 256 experts, 16256 selections, share of top-16 69.0%, top-32 82.9%, top-64 92.2%, top-128 98.7%
+layer  55: 255 experts, 16256 selections, share of top-16 50.8%, top-32 65.5%, top-64 82.1%, top-128 96.3%
+layer  56: 256 experts, 16256 selections, share of top-16 66.7%, top-32 81.1%, top-64 91.3%, top-128 98.2%
+layer  57: 256 experts, 16256 selections, share of top-16 70.9%, top-32 81.9%, top-64 92.7%, top-128 98.4%
+layer  58: 255 experts, 16256 selections, share of top-16 69.4%, top-32 80.2%, top-64 90.6%, top-128 98.2%
+layer  59: 256 experts, 16256 selections, share of top-16 51.8%, top-32 67.8%, top-64 82.8%, top-128 95.6%
+layer  60: 256 experts, 16256 selections, share of top-16 50.7%, top-32 65.9%, top-64 81.4%, top-128 94.5%
 layer  61: 251 experts, 32 selections, share of top-16 65.6%, top-32 100.0%, top-64 100.0%, top-128 100.0%

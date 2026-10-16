@@ -1,0 +1,37 @@
+0.00.190.878 I srv  llama_server: initializing ...
+0.00.192.025 I cmn  common_param: common_params_print_info: verbosity = 3 (adjust with the `-lv N` CLI arg)
+0.00.192.669 W srv  llama_server: security: no API key is set and CORS allows all origins (see https://github.com/ggml-org/llama.cpp/pull/25655)
+0.00.199.417 I srv    load_model: loading model '/mnt/ssd/models/gguf/Muse-Spark-Open-816B-A42B-Q4_K_S/Muse-Spark-Open-816B-A42B-Q4_K_S-00001-of-00022.gguf'
+0.02.463.673 W load: setting token '<|message|>' (200023) attribute to USER_DEFINED (16), old attributes: 8
+0.02.463.680 W load: setting token '<|start|>' (200022) attribute to USER_DEFINED (16), old attributes: 8
+4.53.542.264 I cmn          init: llama threadpool init, n_threads = 32
+4.54.367.057 I srv    load_model: initializing, n_slots = 4, n_ctx_slot = 16384, kv_unified = 'true'
+4.54.378.465 W srv          init: chat template supports preserving reasoning, it is enabled by default (may use more tokens, disable via --no-reasoning-preserve)
+4.54.378.558 I srv  llama_server: model loaded
+4.54.378.575 I srv  llama_server: listening on http://0.0.0.0:8020
+4.55.379.368 I slot get_availabl: id  0 | task -1 | selected slot by LRU, n_tokens = 0, t_last = -1
+4.55.379.448 I slot launch_slot_: id  0 | task 0 | processing task, is_child = 0
+/home/shi3z/llama.cpp-master/ggml/src/ggml-cuda/ggml-cuda.cu:109: CUDA error
+4.55.837.606 E CUDA error: an illegal memory access was encountered
+4.55.837.613 E   current device: 0, in function ggml_backend_cuda_synchronize at /home/shi3z/llama.cpp-master/ggml/src/ggml-cuda/ggml-cuda.cu:2677
+4.55.837.614 E   cudaStreamSynchronize(cuda_ctx->stream())
+/home/shi3z/llama.cpp-master/build/bin/libggml-base.so.0(+0x16d5b)[0x7f9d7d9a8d5b]
+/home/shi3z/llama.cpp-master/build/bin/libggml-base.so.0(+0x171df)[0x7f9d7d9a91df]
+/home/shi3z/llama.cpp-master/build/bin/libggml-base.so.0(ggml_abort+0x152)[0x7f9d7d9a93b2]
+/home/shi3z/llama.cpp-master/build/bin/libggml-cuda.so.0(+0x301ce6)[0x7f9d70a22ce6]
+/home/shi3z/llama.cpp-master/build/bin/libggml-cuda.so.0(+0x30aca9)[0x7f9d70a2bca9]
+/home/shi3z/llama.cpp-master/build/bin/libggml-base.so.0(+0x36018)[0x7f9d7d9c8018]
+/home/shi3z/llama.cpp-master/build/bin/libggml-base.so.0(ggml_backend_sched_graph_compute_async+0x115)[0x7f9d7d9c81f5]
+/home/shi3z/llama.cpp-master/build/bin/libllama.so.0(_ZN13llama_context13graph_computeEP11ggml_cgraphb+0xdb)[0x7f9d7dc9073b]
+/home/shi3z/llama.cpp-master/build/bin/libllama.so.0(_ZN13llama_context14process_ubatchERK12llama_ubatch14llm_graph_typeP22llama_memory_context_iR11ggml_status+0x135)[0x7f9d7dc93065]
+/home/shi3z/llama.cpp-master/build/bin/libllama.so.0(_ZN13llama_context6decodeERK15llama_batch_ext+0x464)[0x7f9d7dc9ca24]
+/home/shi3z/llama.cpp-master/build/bin/libllama-server-impl.so(_ZNSt17_Function_handlerIFvvEZN19server_context_impl6decodeERiiEUlvE_E9_M_invokeERKSt9_Any_data+0x52)[0x7f9d7ec0cf12]
+/home/shi3z/llama.cpp-master/build/bin/libllama-server-impl.so(_ZN12server_queue14yield_to_queueEOSt8functionIFvvEE+0xab)[0x7f9d7ebc012b]
+/home/shi3z/llama.cpp-master/build/bin/libllama-server-impl.so(_ZN19server_context_impl6decodeERii+0x1bf)[0x7f9d7ec22e8f]
+/home/shi3z/llama.cpp-master/build/bin/libllama-server-impl.so(_ZN19server_context_impl12update_slotsEv+0x536)[0x7f9d7ec29a76]
+/home/shi3z/llama.cpp-master/build/bin/libllama-server-impl.so(_ZN12server_queue10start_loopEl+0x128)[0x7f9d7ebc0bb8]
+/home/shi3z/llama.cpp-master/build/bin/libllama-server-impl.so(_Z12llama_serverR13common_paramsiPPcR12server_child+0x4827)[0x7f9d7eb69d67]
+/home/shi3z/llama.cpp-master/build/bin/libllama-server-impl.so(_Z12llama_serveriPPc+0x13a)[0x7f9d7eb6af8a]
+/lib/x86_64-linux-gnu/libc.so.6(+0x29d90)[0x7f9d7e599d90]
+/lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0x80)[0x7f9d7e599e40]
+/home/shi3z/llama.cpp-master/build/bin/llama-server(+0x1295)[0x55b66e8b3295]

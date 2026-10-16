@@ -104,3 +104,53 @@ http.client.RemoteDisconnected: Remote end closed connection without response
 [code] wall 21.7s prompt 158 tok @ 12.7 tok/s, decode 128 tok @ 6.37 tok/s | 'We need to provide Rust code for thread-safe bounded blocking queue with short explanation'
 [long] wall 83.9s prompt 3009 tok @ 43.2 tok/s, decode 128 tok @ 7.33 tok/s | 'We need to summarize policy in three sentences. The policy is 119 clauses: committee shall'
 === vram tests done 04:52:34
+=== custom_hot42g gpu2 05:24:29 threads=32 ncmoe=62 hot list 42 GiB (1488 experts)
+Traceback (most recent call last):
+  File "/mnt/ssdraid/project/muse-spark/bench_client.py", line 14, in <module>
+    r = urllib.request.urlopen(urllib.request.Request(f"http://127.0.0.1:{PORT}/v1/chat/completions", data=json.dumps(req).encode(), headers={"Content-Type": "application/json"}), timeout=3600)
+  File "/usr/lib/python3.10/urllib/request.py", line 216, in urlopen
+    return opener.open(url, data, timeout)
+  File "/usr/lib/python3.10/urllib/request.py", line 519, in open
+    response = self._open(req, data)
+  File "/usr/lib/python3.10/urllib/request.py", line 536, in _open
+    result = self._call_chain(self.handle_open, protocol, protocol +
+  File "/usr/lib/python3.10/urllib/request.py", line 496, in _call_chain
+    result = func(*args)
+  File "/usr/lib/python3.10/urllib/request.py", line 1377, in http_open
+    return self.do_open(http.client.HTTPConnection, req)
+  File "/usr/lib/python3.10/urllib/request.py", line 1352, in do_open
+    r = h.getresponse()
+  File "/usr/lib/python3.10/http/client.py", line 1404, in getresponse
+    response.begin()
+  File "/usr/lib/python3.10/http/client.py", line 323, in begin
+    version, status, reason = self._read_status()
+  File "/usr/lib/python3.10/http/client.py", line 292, in _read_status
+    raise RemoteDisconnected("Remote end closed connection without"
+http.client.RemoteDisconnected: Remote end closed connection without response
+=== custom_hot42g gpu2 05:31:41 threads=32 ncmoe=62 env='LLAMA_MOE_HOT_LIST=/mnt/ssdraid/project/muse-spark/hot_list_42g.csv' flags=''
+Traceback (most recent call last):
+  File "/mnt/ssdraid/project/muse-spark/bench_client.py", line 14, in <module>
+    r = urllib.request.urlopen(urllib.request.Request(f"http://127.0.0.1:{PORT}/v1/chat/completions", data=json.dumps(req).encode(), headers={"Content-Type": "application/json"}), timeout=3600)
+  File "/usr/lib/python3.10/urllib/request.py", line 216, in urlopen
+    return opener.open(url, data, timeout)
+  File "/usr/lib/python3.10/urllib/request.py", line 519, in open
+    response = self._open(req, data)
+  File "/usr/lib/python3.10/urllib/request.py", line 536, in _open
+    result = self._call_chain(self.handle_open, protocol, protocol +
+  File "/usr/lib/python3.10/urllib/request.py", line 496, in _call_chain
+    result = func(*args)
+  File "/usr/lib/python3.10/urllib/request.py", line 1377, in http_open
+    return self.do_open(http.client.HTTPConnection, req)
+  File "/usr/lib/python3.10/urllib/request.py", line 1352, in do_open
+    r = h.getresponse()
+  File "/usr/lib/python3.10/http/client.py", line 1404, in getresponse
+    response.begin()
+  File "/usr/lib/python3.10/http/client.py", line 323, in begin
+    version, status, reason = self._read_status()
+  File "/usr/lib/python3.10/http/client.py", line 292, in _read_status
+    raise RemoteDisconnected("Remote end closed connection without"
+http.client.RemoteDisconnected: Remote end closed connection without response
+=== custom_hot42g gpu2 05:43:59 threads=32 ncmoe=62 env='LLAMA_MOE_HOT_LIST=/mnt/ssdraid/project/muse-spark/hot_list_42g.csv' flags=''
+[short] wall 30.9s prompt 158 tok @ 12.7 tok/s, decode 128 tok @ 6.88 tok/s | 'We need to explain CRISPR gene editing in about 200 words. Should be concise. Probably ~18'
+[code] wall 19.5s prompt 158 tok @ 11.9 tok/s, decode 128 tok @ 7.20 tok/s | 'We need to provide Rust code for thread-safe bounded blocking queue with short explanation'
+[long] wall 92.8s prompt 3009 tok @ 39.6 tok/s, decode 128 tok @ 6.32 tok/s | 'We need to summarize policy in three sentences. The policy is 119 clauses: committee shall'

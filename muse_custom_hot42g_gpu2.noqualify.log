@@ -1,0 +1,20 @@
+0.00.174.814 I srv  llama_server: initializing ...
+0.00.175.967 I cmn  common_param: common_params_print_info: verbosity = 3 (adjust with the `-lv N` CLI arg)
+0.00.176.621 W srv  llama_server: security: no API key is set and CORS allows all origins (see https://github.com/ggml-org/llama.cpp/pull/25655)
+0.00.183.603 I srv    load_model: loading model '/mnt/ssd/models/gguf/Muse-Spark-Open-816B-A42B-Q4_K_S/Muse-Spark-Open-816B-A42B-Q4_K_S-00001-of-00022.gguf'
+0.03.415.181 W load: setting token '<|message|>' (200023) attribute to USER_DEFINED (16), old attributes: 8
+0.03.415.186 W load: setting token '<|start|>' (200022) attribute to USER_DEFINED (16), old attributes: 8
+4.40.976.798 W load_tensors_moe_hot: no layer qualifies for the hot-expert split
+4.41.081.482 I cmn          init: llama threadpool init, n_threads = 32
+4.42.375.984 I srv    load_model: initializing, n_slots = 4, n_ctx_slot = 16384, kv_unified = 'true'
+4.42.390.066 W srv          init: chat template supports preserving reasoning, it is enabled by default (may use more tokens, disable via --no-reasoning-preserve)
+4.42.390.174 I srv  llama_server: model loaded
+4.42.390.192 I srv  llama_server: listening on http://0.0.0.0:8020
+4.45.499.305 I slot get_availabl: id  0 | task -1 | selected slot by LRU, n_tokens = 0, t_last = -1
+4.45.499.442 I slot launch_slot_: id  0 | task 0 | processing task, is_child = 0
+4.48.938.857 I slot print_timing: id  0 | task 0 | prompt eval time =     737.19 ms /     6 tokens (  122.86 ms per token,     8.14 tokens per second)
+4.48.938.902 I slot print_timing: id  0 | task 0 |        eval time =    2702.03 ms /    16 tokens (  180.14 ms per token,     5.55 tokens per second)
+4.48.938.915 I slot print_timing: id  0 | task 0 |       total time =    3439.22 ms /    22 tokens
+4.48.938.934 I slot print_timing: id  0 | task 0 |    graphs reused =         15
+4.48.938.946 I slot print_timing: id  0 | task 0 |   graph reallocs =          1    /     0        (same size) / (changed size)
+4.48.939.007 I slot      release: id  0 | task 0 | stop processing: n_tokens = 21, truncated = 0

@@ -96,3 +96,27 @@ Ours (greedy, llama.cpp, block verification):
 * Pinning whole layers' experts on the GPU keeps the repacked CPU kernels and removes 6/62 of the CPU work; with 32 threads
   this is the best configuration measured: **7.3-7.6 tok/s** decode (+30% over the 24-thread baseline), prefill 13-43 tok/s.
   It is now the default of `run_muse_spark.sh` (THREADS=32, NCMOE=56).
+
+## Finding 5: routing is strongly skewed, so a static hot-expert cache should pay
+`llama-moe-routing-stats` (our tool, patch 0003) over a 2,032-token mixed corpus (prose, code, Japanese), prefill routing:
+* per layer, the 27 hottest experts (= what 45 GB holds) receive 69% of all selections on average (27% in the first layers,
+  up to 100% mid-network); the single hottest expert gets 9% (max 12%); ~61 of 256 experts per layer are never selected.
+* a greedy global pick within 42 GiB (`make_hot_list.py`, 1,488 experts, 14-35 per layer) covers ~68% of selections.
+* unlike the LRU cache, a *static* split does not upload anything per token: hot experts are computed on the GPU, the CPU
+  computes only the cold ones (a sentinel id makes the CPU kernel skip the slot). Expected: CPU work drops to ~1/3,
+  so decode should land around 2x the current 7.5 tok/s if the overheads stay small.
+
+Implemented (patch 0004, `LLAMA_MOE_HOT_LIST=hot_list.csv`): the loader gathers the listed experts into GPU tensors, the
+MoE graph runs two expert chains for decode-sized batches (hot on the GPU from the copy, cold on the host; the slots of
+the other side point at a dummy expert and are masked out, so all ids stay valid for the large-batch prefill path, which
+is unchanged). Output is identical to the plain run.
+
+**Result: no gain.** 42 GiB hot list, 32 threads, all 62 layers host-resident: 6.88 / 7.20 / 6.32 tok/s (short / code / long)
+versus 7.58 / 6.37 / 7.33 with 6 whole layers on the GPU and ~7.2 all-CPU. Moving ~2/3 of the expert selections off the
+CPU did not shorten the token time, so by this point the CPU expert matmul is no longer what the token time is made of.
+The next diagnostic (top-k 8 -> 2 via `--override-kv muse-spark.expert_used_count=int:2`) measures that directly.
+
+Note (found while wiring the split): with `--load-mode none` and a GPU present, llama.cpp puts the CPU-overridden expert
+tensors into the CUDA *pinned host* buffer (`CUDA_Host`), not into the `CPU_REPACK` buffer, so the repacked Q4_K kernels were
+never in use in any run above; the `--no-repack` row differs from the default only by noise. `--no-host` would route the
+experts to `CPU_REPACK` instead (to be measured).

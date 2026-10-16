@@ -1,0 +1,73 @@
+0.00.172.848 I srv  llama_server: initializing ...
+0.00.173.994 I cmn  common_param: common_params_print_info: verbosity = 3 (adjust with the `-lv N` CLI arg)
+0.00.174.583 W srv  llama_server: security: no API key is set and CORS allows all origins (see https://github.com/ggml-org/llama.cpp/pull/25655)
+0.00.181.224 I srv    load_model: loading model '/mnt/ssd/models/gguf/Muse-Spark-Open-816B-A42B-Q4_K_S/Muse-Spark-Open-816B-A42B-Q4_K_S-00001-of-00022.gguf'
+0.02.503.079 W load: setting token '<|message|>' (200023) attribute to USER_DEFINED (16), old attributes: 8
+0.02.503.085 W load: setting token '<|start|>' (200022) attribute to USER_DEFINED (16), old attributes: 8
+4.56.465.466 W load_tensors_moe_hot: layer 0: experts already on CUDA_Host, skipped
+4.56.466.182 W load_tensors_moe_hot: layer 1: experts already on CUDA_Host, skipped
+4.56.466.895 W load_tensors_moe_hot: layer 2: experts already on CUDA_Host, skipped
+4.56.467.611 W load_tensors_moe_hot: layer 3: experts already on CUDA_Host, skipped
+4.56.468.326 W load_tensors_moe_hot: layer 4: experts already on CUDA_Host, skipped
+4.56.469.038 W load_tensors_moe_hot: layer 5: experts already on CUDA_Host, skipped
+4.56.469.750 W load_tensors_moe_hot: layer 6: experts already on CUDA_Host, skipped
+4.56.470.463 W load_tensors_moe_hot: layer 7: experts already on CUDA_Host, skipped
+4.56.471.174 W load_tensors_moe_hot: layer 8: experts already on CUDA_Host, skipped
+4.56.471.888 W load_tensors_moe_hot: layer 9: experts already on CUDA_Host, skipped
+4.56.472.601 W load_tensors_moe_hot: layer 10: experts already on CUDA_Host, skipped
+4.56.473.320 W load_tensors_moe_hot: layer 11: experts already on CUDA_Host, skipped
+4.56.474.048 W load_tensors_moe_hot: layer 12: experts already on CUDA_Host, skipped
+4.56.474.779 W load_tensors_moe_hot: layer 13: experts already on CUDA_Host, skipped
+4.56.476.025 W load_tensors_moe_hot: layer 14: experts already on CUDA_Host, skipped
+4.56.476.751 W load_tensors_moe_hot: layer 15: experts already on CUDA_Host, skipped
+4.56.477.462 W load_tensors_moe_hot: layer 16: experts already on CUDA_Host, skipped
+4.56.478.175 W load_tensors_moe_hot: layer 17: experts already on CUDA_Host, skipped
+4.56.478.889 W load_tensors_moe_hot: layer 18: experts already on CUDA_Host, skipped
+4.56.479.599 W load_tensors_moe_hot: layer 19: experts already on CUDA_Host, skipped
+4.56.480.313 W load_tensors_moe_hot: layer 20: experts already on CUDA_Host, skipped
+4.56.481.043 W load_tensors_moe_hot: layer 21: experts already on CUDA_Host, skipped
+4.56.481.758 W load_tensors_moe_hot: layer 22: experts already on CUDA_Host, skipped
+4.56.482.469 W load_tensors_moe_hot: layer 23: experts already on CUDA_Host, skipped
+4.56.483.187 W load_tensors_moe_hot: layer 24: experts already on CUDA_Host, skipped
+4.56.483.900 W load_tensors_moe_hot: layer 25: experts already on CUDA_Host, skipped
+4.56.484.613 W load_tensors_moe_hot: layer 26: experts already on CUDA_Host, skipped
+4.56.485.327 W load_tensors_moe_hot: layer 27: experts already on CUDA_Host, skipped
+4.56.486.037 W load_tensors_moe_hot: layer 28: experts already on CUDA_Host, skipped
+4.56.486.750 W load_tensors_moe_hot: layer 29: experts already on CUDA_Host, skipped
+4.56.487.461 W load_tensors_moe_hot: layer 30: experts already on CUDA_Host, skipped
+4.56.488.174 W load_tensors_moe_hot: layer 31: experts already on CUDA_Host, skipped
+4.56.488.888 W load_tensors_moe_hot: layer 32: experts already on CUDA_Host, skipped
+4.56.489.600 W load_tensors_moe_hot: layer 33: experts already on CUDA_Host, skipped
+4.56.490.311 W load_tensors_moe_hot: layer 34: experts already on CUDA_Host, skipped
+4.56.491.030 W load_tensors_moe_hot: layer 35: experts already on CUDA_Host, skipped
+4.56.491.741 W load_tensors_moe_hot: layer 36: experts already on CUDA_Host, skipped
+4.56.492.452 W load_tensors_moe_hot: layer 37: experts already on CUDA_Host, skipped
+4.56.493.165 W load_tensors_moe_hot: layer 38: experts already on CUDA_Host, skipped
+4.56.493.877 W load_tensors_moe_hot: layer 39: experts already on CUDA_Host, skipped
+4.56.494.588 W load_tensors_moe_hot: layer 40: experts already on CUDA_Host, skipped
+4.56.495.302 W load_tensors_moe_hot: layer 41: experts already on CUDA_Host, skipped
+4.56.496.015 W load_tensors_moe_hot: layer 42: experts already on CUDA_Host, skipped
+4.56.496.730 W load_tensors_moe_hot: layer 43: experts already on CUDA_Host, skipped
+4.56.497.441 W load_tensors_moe_hot: layer 44: experts already on CUDA_Host, skipped
+4.56.498.160 W load_tensors_moe_hot: layer 45: experts already on CUDA_Host, skipped
+4.56.498.872 W load_tensors_moe_hot: layer 46: experts already on CUDA_Host, skipped
+4.56.499.585 W load_tensors_moe_hot: layer 47: experts already on CUDA_Host, skipped
+4.56.500.296 W load_tensors_moe_hot: layer 48: experts already on CUDA_Host, skipped
+4.56.501.010 W load_tensors_moe_hot: layer 49: experts already on CUDA_Host, skipped
+4.56.502.605 W load_tensors_moe_hot: layer 50: experts already on CUDA_Host, skipped
+4.56.503.328 W load_tensors_moe_hot: layer 51: experts already on CUDA_Host, skipped
+4.56.504.041 W load_tensors_moe_hot: layer 52: experts already on CUDA_Host, skipped
+4.56.504.754 W load_tensors_moe_hot: layer 53: experts already on CUDA_Host, skipped
+4.56.505.466 W load_tensors_moe_hot: layer 54: experts already on CUDA_Host, skipped
+4.56.506.184 W load_tensors_moe_hot: layer 55: experts already on CUDA_Host, skipped
+4.56.506.896 W load_tensors_moe_hot: layer 56: experts already on CUDA_Host, skipped
+4.56.507.608 W load_tensors_moe_hot: layer 57: experts already on CUDA_Host, skipped
+4.56.508.319 W load_tensors_moe_hot: layer 58: experts already on CUDA_Host, skipped
+4.56.509.031 W load_tensors_moe_hot: layer 59: experts already on CUDA_Host, skipped
+4.56.509.744 W load_tensors_moe_hot: layer 60: experts already on CUDA_Host, skipped
+4.56.509.748 W load_tensors_moe_hot: no layer qualifies for the hot-expert split (61 layers listed in /mnt/ssdraid/project/muse-spark/hot_list_42g.csv)
+4.56.576.021 I cmn          init: llama threadpool init, n_threads = 32
+4.57.182.299 I srv    load_model: initializing, n_slots = 4, n_ctx_slot = 16384, kv_unified = 'true'
+4.57.193.772 W srv          init: chat template supports preserving reasoning, it is enabled by default (may use more tokens, disable via --no-reasoning-preserve)
+4.57.193.853 I srv  llama_server: model loaded
+4.57.193.859 I srv  llama_server: listening on http://0.0.0.0:8020

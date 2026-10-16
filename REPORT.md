@@ -165,5 +165,14 @@ experts (`hot_list_2gpu120g.csv`: 4,252 experts, built from two decode histogram
 | 1 GPU, hot split 42 GiB | 4.34 | 9.18 | 8.28 | 8.41 |
 | **2 GPUs, hot split 2 x 60 GiB** | **3.15** | **12.19** | **11.47** | **11.05** |
 
-Output identical to the plain run. The token is now ~82-90 ms of which ~38 ms is the fixed part (attention, dense FFN,
-62 GPU<->CPU hand-offs), so further hot-expert coverage has diminishing returns: the next lever is that fixed part.
+| 2 GPUs, whole layers: experts of 8 layers per GPU (116 GiB), 46 layers on the CPU | 8.00 | 8.12 | 8.11 | 8.06 |
+| 2 GPUs, hot split, 24 threads | | 11.69 | 11.02 | 10.17 |
+| 2 GPUs, hot split, 32 threads, `--poll 100` | | 12.39 | 11.54 | 9.73 |
+| 2 GPUs, hot split, 40 threads | | 8.02 | 6.58 | 7.72 |
+
+Output identical to the plain run. The same 116-120 GiB of VRAM buys +45% as hot experts versus +10% as whole layers.
+Thread count and polling no longer matter (24 vs 32 within noise, 40 collapses under the fleet's render load).
+The token is now ~82-90 ms. Fitting the runs (all-CPU 62 layers, 46 CPU layers, k=2) gives ~40-48 ms that does not
+depend on the number of CPU layers or rows: GPU dense work and per-kernel launch overhead (with a CPU split in every layer
+llama.cpp cannot use CUDA graphs, so each of the ~2,500 small kernels per token pays its launch latency). That, not
+expert coverage, is the next lever: fewer hand-offs (e.g. grouping layers) or CUDA-graph capture of the per-layer GPU segments.

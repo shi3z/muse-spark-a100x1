@@ -173,3 +173,27 @@ http.client.RemoteDisconnected: Remote end closed connection without response
 [code] wall 12.9s prompt 158 tok @ 12.5 tok/s, decode 128 tok @ 11.47 tok/s | 'We need to provide Rust code for thread-safe bounded blocking queue with short explanation'
 [long] wall 84.5s prompt 3009 tok @ 39.4 tok/s, decode 128 tok @ 11.05 tok/s | 'We need to summarize policy in three sentences. The policy is 119 clauses: committee shall'
 rows per host matmul: 3.15
+=== _2gpu_ncmoe46: failed to start
+0.03.279.975 E srv    load_model: failed to load model, '/mnt/ssd/models/gguf/Muse-Spark-Open-816B-A42B-Q4_K_S/Muse-Spark-Open-816B-A42B-Q4_K_S-00001-of-00022.g
+0.03.282.239 E srv  llama_server: exiting due to model loading error
+=== 2gpu tests done 14:05:51
+=== custom_hot2gpu120g_t24 2gpu(2,3) 14:11:36 threads=24 ncmoe=62 flags='-ts 31,31'
+[short] wall 23.7s prompt 158 tok @ 12.4 tok/s, decode 128 tok @ 11.69 tok/s | 'We need to explain CRISPR gene editing in about 200 words. Should be concise. Probably ~18'
+[code] wall 13.5s prompt 158 tok @ 11.2 tok/s, decode 128 tok @ 11.02 tok/s | 'We need to provide Rust code for thread-safe bounded blocking queue with short explanation'
+[long] wall 85.5s prompt 3009 tok @ 39.4 tok/s, decode 128 tok @ 10.17 tok/s | 'We need to summarize policy in three sentences. The policy is 119 clauses: committee shall'
+=== custom_hot2gpu120g_t32_poll100 2gpu(2,3) 14:19:56 threads=32 ncmoe=62 flags='-ts 31,31 --poll 100'
+[short] wall 22.7s prompt 158 tok @ 12.8 tok/s, decode 128 tok @ 12.39 tok/s | 'We need to explain CRISPR gene editing in about 200 words. Should be concise. Probably ~18'
+[code] wall 12.8s prompt 158 tok @ 12.2 tok/s, decode 128 tok @ 11.54 tok/s | 'We need to provide Rust code for thread-safe bounded blocking queue with short explanation'
+[long] wall 86.1s prompt 3009 tok @ 39.4 tok/s, decode 128 tok @ 9.73 tok/s | 'We need to summarize policy in three sentences. The policy is 119 clauses: committee shall'
+=== custom_hot2gpu120g_t40 2gpu(2,3) 14:28:28 threads=40 ncmoe=62 flags='-ts 31,31'
+[short] wall 29.8s prompt 158 tok @ 11.3 tok/s, decode 128 tok @ 8.02 tok/s | 'We need to explain CRISPR gene editing in about 200 words. Should be concise. Probably ~18'
+[code] wall 25.7s prompt 158 tok @ 3.3 tok/s, decode 128 tok @ 6.58 tok/s | 'We need to provide Rust code for thread-safe bounded blocking queue with short explanation'
+[long] wall 89.8s prompt 3009 tok @ 39.2 tok/s, decode 128 tok @ 7.72 tok/s | 'We need to summarize policy in three sentences. The policy is 119 clauses: committee shall'
+=== 2gpu sweep done 14:30:53
+=== custom_2gpu_8layers_each 2gpu(2,3) 14:36:08 threads=32 experts of layers 23-30 on GPU2, 54-61 on GPU3, rest CPU
+2, 70305 MiB
+3, 65989 MiB
+[short] wall 25.6s prompt 158 tok @ 15.9 tok/s, decode 128 tok @ 8.12 tok/s | 'We need to explain CRISPR gene editing in about 200 words. Should be concise. Probably ~18'
+[code] wall 17.3s prompt 158 tok @ 13.9 tok/s, decode 128 tok @ 8.11 tok/s | 'We need to provide Rust code for thread-safe bounded blocking queue with short explanation'
+[long] wall 72.2s prompt 3009 tok @ 51.0 tok/s, decode 128 tok @ 8.06 tok/s | 'We need to summarize policy in three sentences. The policy is 119 clauses: committee shall'
+=== 2gpu whole-layer done 14:38:03

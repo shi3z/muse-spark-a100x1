@@ -154,3 +154,15 @@ http.client.RemoteDisconnected: Remote end closed connection without response
 [short] wall 30.9s prompt 158 tok @ 12.7 tok/s, decode 128 tok @ 6.88 tok/s | 'We need to explain CRISPR gene editing in about 200 words. Should be concise. Probably ~18'
 [code] wall 19.5s prompt 158 tok @ 11.9 tok/s, decode 128 tok @ 7.20 tok/s | 'We need to provide Rust code for thread-safe bounded blocking queue with short explanation'
 [long] wall 92.8s prompt 3009 tok @ 39.6 tok/s, decode 128 tok @ 6.32 tok/s | 'We need to summarize policy in three sentences. The policy is 119 clauses: committee shall'
+=== custom_k2_t32 gpu2 06:02:43 threads=32 ncmoe=62 env='' flags='--override-kv muse-spark.expert_used_count=int:2'
+[short] wall 9.8s prompt 158 tok @ 27.4 tok/s, decode 64 tok @ 15.90 tok/s | 'We need to explain CRISPR gene editing works, in about 200 words. Should be concise. Proba'
+[code] wall 4.8s prompt 158 tok @ 30.0 tok/s, decode 64 tok @ 15.49 tok/s | 'We need to provide Rust code for thread-safe bounded blocking queue with explanation. Prob'
+[long] wall 48.1s prompt 3009 tok @ 68.4 tok/s, decode 64 tok @ 15.70 tok/s | 'We need to summarize policy in three sentences. The user gave huge list of clauses 1-119. '
+=== custom_hotdecode42g gpu2 06:52:43 threads=32 ncmoe=62 decode-trained 42 GiB hot list
+[short] wall 30.8s prompt 158 tok @ 12.7 tok/s, decode 128 tok @ 6.93 tok/s | 'We need to explain CRISPR gene editing in about 200 words. Should be concise. Probably ~18'
+[code] wall 20.1s prompt 158 tok @ 12.3 tok/s, decode 128 tok @ 6.93 tok/s | 'We need to provide Rust code for thread-safe bounded blocking queue with short explanation'
+[long] wall 91.1s prompt 3009 tok @ 39.7 tok/s, decode 128 tok @ 6.81 tok/s | 'We need to summarize policy in three sentences. The policy is 119 clauses: committee shall'
+=== custom_hotdecode42g_sentinel gpu2 07:01:39 threads=32 ncmoe=62 decode-trained 42 GiB hot list, CPU skips hot slots
+[short] wall 26.1s prompt 158 tok @ 12.9 tok/s, decode 128 tok @ 9.18 tok/s | 'We need to explain CRISPR gene editing in about 200 words. Should be concise. Probably ~18'
+[code] wall 17.3s prompt 158 tok @ 11.2 tok/s, decode 128 tok @ 8.28 tok/s | 'We need to provide Rust code for thread-safe bounded blocking queue with short explanation'
+[long] wall 87.7s prompt 3009 tok @ 39.7 tok/s, decode 128 tok @ 8.41 tok/s | 'We need to summarize policy in three sentences. The policy is 119 clauses: committee shall'

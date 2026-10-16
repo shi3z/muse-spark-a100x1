@@ -1,0 +1,72 @@
+From 0a62ab0663021313665e2ed5733aa15915d9deaf Mon Sep 17 00:00:00 2001
+From: shi3z <shi3z@me.com>
+Date: Fri, 16 Oct 2026 07:04:12 +0000
+Subject: [PATCH 6/6] hot-expert split: skip hot slots on the host with a
+ sentinel id, build the split only for decode-sized batches
+
+The dummy-expert mapping kept the host kernel's cost unchanged: the Q4_K x Q8_K kernel is compute-bound and
+its cost scales with the number of rows, not distinct experts. With the sentinel the host computes only the
+cold slots (4.3 rows/matmul instead of 8 with a decode-trained 42 GiB list on Muse-Spark): 8.3-9.2 tok/s vs 6.9.
+Batches above LLAMA_MOE_HOT_MAX_TOKENS (4) take the unchanged path, so the large-batch GPU expert copy never
+sees a sentinel.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+---
+ src/llama-graph.cpp | 7 ++++++-
+ src/llama-model.cpp | 2 +-
+ src/llama-model.h   | 2 +-
+ 3 files changed, 8 insertions(+), 3 deletions(-)
+
+diff --git a/src/llama-graph.cpp b/src/llama-graph.cpp
+index d03f571ec..fef317ad8 100644
+--- a/src/llama-graph.cpp
++++ b/src/llama-graph.cpp
+@@ -1,5 +1,7 @@
+ #include "llama-graph.h"
+ 
++#include <cstdlib>
++
+ #include "llama-impl.h"
+ #include "llama-model.h"
+ #include "llama-moe-cache.h"
+@@ -2477,7 +2479,10 @@ ggml_tensor * llm_graph_context::build_moe_ffn(
+ 
+     ggml_tensor * experts = nullptr;
+     const llama_moe_hot_layer * hot = (moe_hot && il >= 0 && (size_t) il < moe_hot->layers.size() && moe_hot->layers[il].up) ? &moe_hot->layers[il] : nullptr;
+-    if (hot && up_exps && gate_exps && down_exps && !gate_up_exps && !up_exps_b && !gate_exps_b && !down_exps_b && !slots) {
++    // decode-sized batches only: the dummy ids repeat within a token, which the CUDA MMVQ path accepts but the MMQ path
++    // (batches above MMVQ_MAX_BATCH_SIZE) does not; prefill keeps the normal path (large-batch expert copy to the GPU)
++    static const int64_t hot_max_tokens = [] { const char * e = getenv("LLAMA_MOE_HOT_MAX_TOKENS"); return e ? atoll(e) : 4; }();
++    if (hot && n_tokens <= hot_max_tokens && up_exps && gate_exps && down_exps && !gate_up_exps && !up_exps_b && !gate_exps_b && !down_exps_b && !slots) {
+         // static hot-expert split: the hot experts run on the GPU from the gathered copy, the host chain computes the cold ones
+         ggml_tensor * ids_1d = ggml_cast(ctx0, selected_experts, GGML_TYPE_F32);                       // contiguous copy of the top-k view
+         ids_1d = ggml_cast(ctx0, ggml_reshape_1d(ctx0, ids_1d, n_expert_used*n_tokens), GGML_TYPE_I32); // [n_expert_used*n_tokens]
+diff --git a/src/llama-model.cpp b/src/llama-model.cpp
+index 39edf10f6..9b3da0965 100644
+--- a/src/llama-model.cpp
++++ b/src/llama-model.cpp
+@@ -2161,7 +2161,7 @@ void llama_model_base::load_tensors_moe_hot(llama_model_loader & ml) {
+         for (int32_t slot = 0; slot < h.n_hot; ++slot) {
+             const int32_t e = pl.experts[slot];
+             hot_idx[e]   = slot;
+-            cold_idx[e]  = 0;    // a dummy: ids must stay valid for the GPU large-batch path, the row is masked out
++            cold_idx[e]  = -1;   // sentinel: the CPU mul_mat_id skips the slot (its row is zeroed); the split is only built for decode-sized batches, which never take the GPU expert-copy path
+             mask[e]      = 1.0f;
+             cold_mask[e] = 0.0f;
+         }
+diff --git a/src/llama-model.h b/src/llama-model.h
+index ede4fb46d..03d3f5aef 100644
+--- a/src/llama-model.h
++++ b/src/llama-model.h
+@@ -710,7 +710,7 @@ struct llama_moe_hot_layer {
+     ggml_tensor * gate     = nullptr;
+     ggml_tensor * down     = nullptr;
+     ggml_tensor * hot_idx  = nullptr; // I32 [1, n_expert]: slot in the hot tensors, 0 for cold experts (masked out)
+-    ggml_tensor * cold_idx = nullptr; // I32 [1, n_expert]: the expert id, 0 (a dummy, masked out) for hot experts
++    ggml_tensor * cold_idx = nullptr; // I32 [1, n_expert]: the expert id, -1 for hot experts (skipped by the CPU kernel)
+     ggml_tensor * mask     = nullptr; // F32 [1, n_expert]: 1 for hot experts
+     ggml_tensor * cold_mask = nullptr; // F32 [1, n_expert]: 1 for cold experts
+     int32_t n_hot = 0;
+-- 
+2.34.1
+

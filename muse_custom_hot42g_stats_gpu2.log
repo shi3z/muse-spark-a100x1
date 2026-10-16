@@ -1,0 +1,71 @@
+0.00.167.111 I srv  llama_server: initializing ...
+0.00.168.249 I cmn  common_param: common_params_print_info: verbosity = 3 (adjust with the `-lv N` CLI arg)
+0.00.168.871 W srv  llama_server: security: no API key is set and CORS allows all origins (see https://github.com/ggml-org/llama.cpp/pull/25655)
+0.00.175.524 I srv    load_model: loading model '/mnt/ssd/models/gguf/Muse-Spark-Open-816B-A42B-Q4_K_S/Muse-Spark-Open-816B-A42B-Q4_K_S-00001-of-00022.gguf'
+0.02.763.663 W load: setting token '<|message|>' (200023) attribute to USER_DEFINED (16), old attributes: 8
+0.02.763.670 W load: setting token '<|start|>' (200022) attribute to USER_DEFINED (16), old attributes: 8
+4.55.521.565 I cmn          init: llama threadpool init, n_threads = 32
+mmid stats: window of 186 ops: 12.69 distinct experts/op, 15.87 rows/op (ne11=1)
+mmid stats: window of 186 ops: 7.58 distinct experts/op, 15.87 rows/op (ne11=1)
+4.56.175.376 I srv    load_model: initializing, n_slots = 4, n_ctx_slot = 16384, kv_unified = 'true'
+4.56.186.749 W srv          init: chat template supports preserving reasoning, it is enabled by default (may use more tokens, disable via --no-reasoning-preserve)
+4.56.186.817 I srv  llama_server: model loaded
+4.56.186.824 I srv  llama_server: listening on http://0.0.0.0:8020
+5.05.442.500 I slot get_availabl: id  0 | task -1 | selected slot by LRU, n_tokens = 0, t_last = -1
+5.05.444.921 I slot launch_slot_: id  0 | task 0 | processing task, is_child = 0
+5.15.925.320 I slot print_timing: id  0 | task 0 | prompt processing, n_tokens =    138, progress = 0.87, t =  10.48 s / 13.17 tokens per second
+5.17.382.517 I slot print_timing: id  0 | task 0 | prompt processing, n_tokens =    154, progress = 0.97, t =  11.94 s / 12.90 tokens per second
+mmid stats: window of 186 ops: 56.21 distinct experts/op, 126.45 rows/op (ne11=4)
+mmid stats: window of 186 ops: 18.55 distinct experts/op, 31.23 rows/op (ne11=1)
+mmid stats: window of 186 ops: 7.52 distinct experts/op, 8.00 rows/op (ne11=1)
+mmid stats: window of 186 ops: 6.98 distinct experts/op, 8.00 rows/op (ne11=1)
+mmid stats: window of 186 ops: 7.31 distinct experts/op, 8.00 rows/op (ne11=1)
+mmid stats: window of 186 ops: 7.15 distinct experts/op, 8.00 rows/op (ne11=1)
+mmid stats: window of 186 ops: 7.29 distinct experts/op, 8.00 rows/op (ne11=1)
+mmid stats: window of 186 ops: 7.71 distinct experts/op, 8.00 rows/op (ne11=1)
+mmid stats: window of 186 ops: 7.60 distinct experts/op, 8.00 rows/op (ne11=1)
+mmid stats: window of 186 ops: 7.11 distinct experts/op, 8.00 rows/op (ne11=1)
+mmid stats: window of 186 ops: 6.81 distinct experts/op, 8.00 rows/op (ne11=1)
+mmid stats: window of 186 ops: 7.44 distinct experts/op, 8.00 rows/op (ne11=1)
+mmid stats: window of 186 ops: 7.48 distinct experts/op, 8.00 rows/op (ne11=1)
+mmid stats: window of 186 ops: 7.76 distinct experts/op, 8.00 rows/op (ne11=1)
+mmid stats: window of 186 ops: 7.77 distinct experts/op, 8.00 rows/op (ne11=1)
+mmid stats: window of 186 ops: 7.32 distinct experts/op, 8.00 rows/op (ne11=1)
+mmid stats: window of 186 ops: 7.66 distinct experts/op, 8.00 rows/op (ne11=1)
+mmid stats: window of 186 ops: 7.47 distinct experts/op, 8.00 rows/op (ne11=1)
+mmid stats: window of 186 ops: 7.42 distinct experts/op, 8.00 rows/op (ne11=1)
+mmid stats: window of 186 ops: 7.66 distinct experts/op, 8.00 rows/op (ne11=1)
+mmid stats: window of 186 ops: 7.73 distinct experts/op, 8.00 rows/op (ne11=1)
+mmid stats: window of 186 ops: 7.63 distinct experts/op, 8.00 rows/op (ne11=1)
+mmid stats: window of 186 ops: 7.50 distinct experts/op, 8.00 rows/op (ne11=1)
+mmid stats: window of 186 ops: 7.65 distinct experts/op, 8.00 rows/op (ne11=1)
+mmid stats: window of 186 ops: 7.55 distinct experts/op, 8.00 rows/op (ne11=1)
+mmid stats: window of 186 ops: 7.63 distinct experts/op, 8.00 rows/op (ne11=1)
+mmid stats: window of 186 ops: 7.50 distinct experts/op, 8.00 rows/op (ne11=1)
+mmid stats: window of 186 ops: 7.63 distinct experts/op, 8.00 rows/op (ne11=1)
+mmid stats: window of 186 ops: 7.56 distinct experts/op, 8.00 rows/op (ne11=1)
+mmid stats: window of 186 ops: 7.50 distinct experts/op, 8.00 rows/op (ne11=1)
+mmid stats: window of 186 ops: 7.60 distinct experts/op, 8.00 rows/op (ne11=1)
+mmid stats: window of 186 ops: 7.66 distinct experts/op, 8.00 rows/op (ne11=1)
+mmid stats: window of 186 ops: 7.19 distinct experts/op, 8.00 rows/op (ne11=1)
+mmid stats: window of 186 ops: 7.27 distinct experts/op, 8.00 rows/op (ne11=1)
+mmid stats: window of 186 ops: 7.31 distinct experts/op, 8.00 rows/op (ne11=1)
+mmid stats: window of 186 ops: 7.53 distinct experts/op, 8.00 rows/op (ne11=1)
+mmid stats: window of 186 ops: 6.95 distinct experts/op, 8.00 rows/op (ne11=1)
+mmid stats: window of 186 ops: 6.73 distinct experts/op, 8.00 rows/op (ne11=1)
+mmid stats: window of 186 ops: 6.90 distinct experts/op, 8.00 rows/op (ne11=1)
+mmid stats: window of 186 ops: 7.29 distinct experts/op, 8.00 rows/op (ne11=1)
+mmid stats: window of 186 ops: 7.34 distinct experts/op, 8.00 rows/op (ne11=1)
+mmid stats: window of 186 ops: 7.61 distinct experts/op, 8.00 rows/op (ne11=1)
+mmid stats: window of 186 ops: 7.24 distinct experts/op, 8.00 rows/op (ne11=1)
+mmid stats: window of 186 ops: 7.45 distinct experts/op, 8.00 rows/op (ne11=1)
+mmid stats: window of 186 ops: 7.39 distinct experts/op, 8.00 rows/op (ne11=1)
+mmid stats: window of 186 ops: 7.52 distinct experts/op, 8.00 rows/op (ne11=1)
+mmid stats: window of 186 ops: 7.42 distinct experts/op, 8.00 rows/op (ne11=1)
+mmid stats: window of 186 ops: 7.35 distinct experts/op, 8.00 rows/op (ne11=1)
+5.25.164.508 I slot print_timing: id  0 | task 0 | prompt eval time =   12415.99 ms /   158 tokens (   78.58 ms per token,    12.73 tokens per second)
+5.25.164.515 I slot print_timing: id  0 | task 0 |        eval time =    7303.33 ms /    48 tokens (  155.39 ms per token,     6.44 tokens per second)
+5.25.164.517 I slot print_timing: id  0 | task 0 |       total time =   19719.32 ms /   206 tokens
+5.25.164.525 I slot print_timing: id  0 | task 0 |    graphs reused =         47
+5.25.164.527 I slot print_timing: id  0 | task 0 |   graph reallocs =          0    /     0        (same size) / (changed size)
+5.25.164.605 I slot      release: id  0 | task 0 | stop processing: n_tokens = 205, truncated = 0

@@ -114,9 +114,43 @@ is unchanged). Output is identical to the plain run.
 **Result: no gain.** 42 GiB hot list, 32 threads, all 62 layers host-resident: 6.88 / 7.20 / 6.32 tok/s (short / code / long)
 versus 7.58 / 6.37 / 7.33 with 6 whole layers on the GPU and ~7.2 all-CPU. Moving ~2/3 of the expert selections off the
 CPU did not shorten the token time, so by this point the CPU expert matmul is no longer what the token time is made of.
-The next diagnostic (top-k 8 -> 2 via `--override-kv muse-spark.expert_used_count=int:2`) measures that directly.
+Diagnostics that followed:
+* top-k 8 -> 2 (`--override-kv muse-spark.expert_used_count=int:2`): 15.5-15.9 tok/s. So the expert matmul *is* still the
+  cost at k=8 (about 13 ms per expert-per-token across the 62 layers, ~38 ms fixed), and the split should have paid.
+* a counter in the CPU kernel (`GGML_MMID_STATS=1`): with the hot list the host still computed 7.4 distinct experts per
+  matmul instead of 8 (expected ~3.6). The split works mechanically; the hot *set* was wrong.
+* a kernel-side histogram of decode routing (`GGML_MMID_HIST=path`): decode routing is as skewed as prefill routing
+  (top-27 experts per layer = 60% of selections), but the experts that are hot during prefill of a text corpus cover only
+  20% of the selections made while *generating*. The two distributions differ a lot; a hot list must be built from
+  decode routing of a representative workload (see `collect_decode_prompts.py`, `make_hot_list.py`).
 
 Note (found while wiring the split): with `--load-mode none` and a GPU present, llama.cpp puts the CPU-overridden expert
 tensors into the CUDA *pinned host* buffer (`CUDA_Host`), not into the `CPU_REPACK` buffer, so the repacked Q4_K kernels were
 never in use in any run above; the `--no-repack` row differs from the default only by noise. `--no-host` would route the
 experts to `CPU_REPACK` instead (to be measured).
+
+## Finding 6: the host kernel's cost is per row, not per expert; with that fixed the split pays
+The CPU expert kernel (Q4_K weights x Q8_K activations) is compute-bound: its time scales with the number of (slot, token)
+rows it computes, not with how many distinct experts those rows touch. Folding hot slots into a dummy expert therefore
+saved nothing (8.00 rows per matmul either way). Skipping the slot in the kernel (sentinel id -1, zero output row) does:
+
+| config (32 threads, 128 tokens, GPU 2) | rows / host matmul | short | code | long |
+|---|---|---|---|---|
+| all experts on CPU (reference, llama-bench tg32) | 8.00 | ~7.2 | | |
+| 6 layers' experts on the GPU (`--n-cpu-moe 56`) | 8.00 (56 layers) | 7.58 | 6.37 | 7.33 |
+| hot split, prefill-trained list, dummy fold | 8.00 | 6.88 | 7.20 | 6.32 |
+| hot split, decode-trained list, dummy fold | 8.00 | 6.93 | 6.93 | 6.81 |
+| **hot split, decode-trained list, sentinel skip** | **4.34** | **9.18** | **8.28** | **8.41** |
+
+* The decode-trained 42 GiB list (1,488 experts, 10-32 per layer, from 10 training prompts x 100 tokens) covers 46.7% of
+  the training selections and 43.6% of the held-out benchmark prompts' selections, so it generalizes.
+* Token time model (from the k=2 run): ~38 ms fixed + ~12.7 ms per row-set across the 62 layers; 4.34 rows -> ~93 ms
+  predicted, 109-121 ms measured. The remaining gap is the extra graph nodes and the GPU hot chain.
+* Output text is identical to the plain run on all three prompts.
+* Usage: `LLAMA_MOE_HOT_LIST=hot_list.csv` (lines `layer,expert`), `--n-cpu-moe 62`; the list comes from
+  `GGML_MMID_HIST=path` on a plain run driven by `collect_decode_prompts.py`, then `make_hot_list.py hist.csv 42 30300000`.
+  `run_muse_cmp.sh hot` launches this configuration.
+
+Where the next gains are: more VRAM coverage is the straight path (a second A100 would hold ~2/3 of the selections),
+a cheaper host kernel (the repacked Q4_K path, never active here because the experts sit in the CUDA pinned buffer; or
+AMX int8), and the 38 ms fixed part (62 GPU<->CPU hand-offs per token).

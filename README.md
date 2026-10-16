@@ -45,6 +45,28 @@ llama.cpp master の `--n-cpu-moe` で実現しています。
 * スレッド数: 16→4.6、24→5.5、32→7.2 tok/s（llama-bench、全 expert CPU）。48（全論理 CPU）は 0.25 tok/s に崩壊する。
   計測中は艦隊の Blender レンダー 6 プロセスが約 8 コアを使っていたので、数値はすべて下限。
 
+### 静的 hot-expert 分割（自作、llama.cpp パッチ 0004）— 現時点の最速: **8.3〜9.2 tok/s**
+ルーティングは強く偏っている（各層 256 中の上位 27 expert が選択の 60〜69% を占める）。そこで「よく選ばれる expert を
+GPU に複製し、CPU 側はそのスロットをスキップする」静的分割を実装した（`LLAMA_MOE_HOT_LIST=hot_list.csv`）。
+
+| 構成（32 スレッド、128 トークン） | CPU 行列積あたりの行数 | short | code | long |
+|---|---|---|---|---|
+| 6 層分の expert を GPU（`--n-cpu-moe 56`） | 8.00 | 7.58 | 6.37 | 7.33 |
+| hot 分割、prefill で作ったリスト、ダミー expert に畳む | 8.00 | 6.88 | 7.20 | 6.32 |
+| hot 分割、decode で作ったリスト、ダミー expert に畳む | 8.00 | 6.93 | 6.93 | 6.81 |
+| **hot 分割、decode で作ったリスト、CPU がスロットをスキップ** | **4.34** | **9.18** | **8.28** | **8.41** |
+
+途中で分かったこと:
+1. **prefill と decode でホットな expert は別物。** テキストコーパスの prefill で作ったリストは、生成中の選択の 20% しか
+   カバーしなかった（decode 由来のリストは held-out プロンプトで 44%）。リストは実際の生成から取る（`GGML_MMID_HIST` + `collect_decode_prompts.py`）。
+2. **CPU の expert カーネルは「行数」に比例し、「異なる expert 数」には比例しない**（compute-bound）。ホットなスロットを
+   ダミー expert に畳んでも 8 行のままで速くならず、カーネルにスキップ（番兵 id -1）を入れて初めて 4.3 行 → 高速化した。
+3. top-k を 8→2 にすると 15.7 tok/s（診断用、品質は無視）。固定部分 ≈ 38 ms + 1 行セットあたり ≈ 12.7 ms/token。
+4. 大きなバッチ（prefill）は従来経路のまま（llama.cpp が使う expert だけ GPU にコピーする経路は番兵を受け付けないため、分割は decode サイズのバッチのみ）。
+
+起動: `./run_muse_cmp.sh hot`（全 expert をホストに置き、`hot_list_decode42g.csv` の 1,488 expert = 42 GiB を GPU へ）。
+出力は通常実行と完全一致。
+
 ### わかったこと
 1. **動く。** GPU 側は約 24 GB（attention / dense FFN / embedding / lm_head、16K ctx）、expert 422 GiB はホスト RAM。
    `--load-mode none` + `numactl --interleave=all` + `--numa distribute` + `kernel.numa_balancing=0` で

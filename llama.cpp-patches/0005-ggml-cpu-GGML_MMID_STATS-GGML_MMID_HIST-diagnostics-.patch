@@ -1,0 +1,64 @@
+From 28d802c4b6602189cf0fcb6ba787cb995214db14 Mon Sep 17 00:00:00 2001
+From: shi3z <shi3z@me.com>
+Date: Fri, 16 Oct 2026 06:38:09 +0000
+Subject: [PATCH 5/6] ggml-cpu: GGML_MMID_STATS / GGML_MMID_HIST diagnostics
+ for mul_mat_id (distinct experts per op, per-layer decode histogram)
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+---
+ ggml/src/ggml-cpu/ggml-cpu.c | 39 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 39 insertions(+)
+
+diff --git a/ggml/src/ggml-cpu/ggml-cpu.c b/ggml/src/ggml-cpu/ggml-cpu.c
+index 81c68213c..612f20f19 100644
+--- a/ggml/src/ggml-cpu/ggml-cpu.c
++++ b/ggml/src/ggml-cpu/ggml-cpu.c
+@@ -1674,6 +1674,45 @@ static void ggml_compute_forward_mul_mat_id(
+ 
+     ggml_barrier(params->threadpool);
+ 
++    // GGML_MMID_STATS=1: report how many distinct experts each mul_mat_id computes (hot-expert split diagnostics)
++    if (ith == 0) {
++        static int stats_on = -1;
++        if (stats_on < 0) { const char * e = getenv("GGML_MMID_STATS"); stats_on = (e && atoi(e) != 0) ? 1 : 0; }
++        if (stats_on) {
++            static int64_t n_ops = 0, n_experts = 0, n_rows = 0;
++            int64_t distinct = 0;
++            for (int a = 0; a < n_as; ++a) { if (matrix_row_counts[a] > 0) { distinct++; n_rows += matrix_row_counts[a]; } }
++            n_experts += distinct; n_ops++;
++            // GGML_MMID_HIST=<path>: per-layer histogram of the experts computed by the host (decode-sized batches only), rewritten every 50 windows
++            {
++                static const char * hist_path = NULL; static int hist_init = 0;
++                static int64_t * hist = NULL; static int hist_layers = 0, hist_experts = 0; static int64_t hist_windows = 0;
++                if (!hist_init) { hist_init = 1; hist_path = getenv("GGML_MMID_HIST"); }
++                if (hist_path && ids->ne[1] <= 4) {
++                    const char * nm = dst->name; const char * dash = strrchr(nm, '-');
++                    const int il = dash ? atoi(dash + 1) : -1;
++                    if (il >= 0 && il < 512) {
++                        if (hist == NULL || il >= hist_layers || n_as > hist_experts) {
++                            const int nl = il >= hist_layers ? il + 1 : hist_layers; const int ne_ = n_as > hist_experts ? (int) n_as : hist_experts;
++                            int64_t * nh = calloc((size_t) nl * ne_, sizeof(int64_t));
++                            for (int l = 0; l < hist_layers; ++l) for (int e = 0; e < hist_experts; ++e) nh[(size_t) l*ne_ + e] = hist[(size_t) l*hist_experts + e];
++                            free(hist); hist = nh; hist_layers = nl; hist_experts = ne_;
++                        }
++                        for (int a = 0; a < n_as; ++a) hist[(size_t) il*hist_experts + a] += matrix_row_counts[a];
++                    }
++                    if (n_ops % 186 == 0 && ++hist_windows % 50 == 0) {
++                        FILE * f = fopen(hist_path, "w");
++                        if (f) { fprintf(f, "layer,expert,count\n"); for (int l = 0; l < hist_layers; ++l) for (int e = 0; e < hist_experts; ++e) fprintf(f, "%d,%d,%lld\n", l, e, (long long) hist[(size_t) l*hist_experts + e]); fclose(f); }
++                    }
++                }
++            }
++            if (n_ops % 186 == 0) { // one window = 62 layers x 3 matmuls = one decode token
++                fprintf(stderr, "mmid stats: window of %lld ops: %.2f distinct experts/op, %.2f rows/op (ne11=%lld)\n", (long long) n_ops, (double) n_experts / n_ops, (double) n_rows / n_ops, (long long) ids->ne[1]);
++                n_ops = 0; n_experts = 0; n_rows = 0;
++            }
++        }
++    }
++
+     for (int cur_a = 0; cur_a < n_as; ++cur_a) {
+         const int64_t cne1 = matrix_row_counts[cur_a];
+ 
+-- 
+2.34.1
+

@@ -197,3 +197,23 @@ rows per host matmul: 3.15
 [code] wall 17.3s prompt 158 tok @ 13.9 tok/s, decode 128 tok @ 8.11 tok/s | 'We need to provide Rust code for thread-safe bounded blocking queue with short explanation'
 [long] wall 72.2s prompt 3009 tok @ 51.0 tok/s, decode 128 tok @ 8.06 tok/s | 'We need to summarize policy in three sentences. The policy is 119 clauses: committee shall'
 === 2gpu whole-layer done 14:38:03
+=== custom_iq2_base_1gpu gpu2 21:52:31 IQ2_XXS threads=32 ncmoe=62 env='' flags=''
+2, 24863 MiB
+[short] wall 41.3s prompt 158 tok @ 15.0 tok/s, decode 128 tok @ 4.13 tok/s | 'We need to explain CRISPR gene editing in about 200 words. Should be concise, accurate. Pr'
+[code] wall 27.7s prompt 158 tok @ 6.5 tok/s, decode 128 tok @ 5.21 tok/s | 'We need to provide code for thread-safe bounded blocking queue in Rust with short explanat'
+[long] wall 72.4s prompt 3009 tok @ 69.7 tok/s, decode 128 tok @ 4.10 tok/s | 'We need to summarize policy in three sentences. The policy is 119 clauses: committee shall'
+rows per host matmul: 8.00
+=== custom_iq2_hot42g_1gpu gpu2 21:58:10 IQ2_XXS threads=32 ncmoe=62 env='LLAMA_MOE_HOT_LIST=/mnt/ssdraid/project/muse-spark/hot_list_iq2xxs_1gpu.csv' flags=''
+2, 67875 MiB
+[short] wall 25.5s prompt 158 tok @ 16.2 tok/s, decode 128 tok @ 8.07 tok/s | 'We need to explain CRISPR gene editing in about 200 words. Should be concise, accurate. Pr'
+[code] wall 18.3s prompt 158 tok @ 7.0 tok/s, decode 128 tok @ 8.33 tok/s | 'We need to provide code for thread-safe bounded blocking queue in Rust with short explanat'
+[long] wall 57.8s prompt 3009 tok @ 69.9 tok/s, decode 128 tok @ 7.66 tok/s | 'We need to summarize policy in three sentences. The policy is 119 clauses: committee shall'
+rows per host matmul: 2.11
+=== custom_iq2_hot120g_2gpu gpu2,3 22:03:45 IQ2_XXS threads=32 ncmoe=62 env='LLAMA_MOE_HOT_LIST=/mnt/ssdraid/project/muse-spark/hot_list_iq2xxs_2gpu.csv' flags='-ts 31,31'
+2, 77677 MiB
+3, 71107 MiB
+[short] wall 18.8s prompt 158 tok @ 14.3 tok/s, decode 128 tok @ 16.36 tok/s | 'We need to explain CRISPR gene editing in about 200 words. Should be concise, accurate. Pr'
+[code] wall 10.7s prompt 158 tok @ 8.0 tok/s, decode 128 tok @ 15.82 tok/s | 'We need to provide code for thread-safe bounded blocking queue in Rust with short explanat'
+[long] wall 52.3s prompt 3009 tok @ 70.9 tok/s, decode 128 tok @ 10.90 tok/s | 'We need to summarize policy in three sentences. The policy is 119 clauses: committee shall'
+rows per host matmul: 1.09
+=== iq2 tests done 22:05:07

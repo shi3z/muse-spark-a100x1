@@ -176,3 +176,30 @@ The token is now ~82-90 ms. Fitting the runs (all-CPU 62 layers, 46 CPU layers, 
 depend on the number of CPU layers or rows: GPU dense work and per-kernel launch overhead (with a CPU split in every layer
 llama.cpp cannot use CUDA graphs, so each of the ~2,500 small kernels per token pays its launch latency). That, not
 expert coverage, is the next lever: fewer hand-offs (e.g. grouping layers) or CUDA-graph capture of the per-layer GPU segments.
+
+## Kernel launches are not the fixed part: CUDA graphs are already in use
+`GGML_CUDA_GRAPH_DEBUG=1` on the 2-GPU hot config (llama-bench): every per-layer GPU split is captured once
+("warmup complete" x64) and then reused on every token ("Graph id reused" x4096 for 64 tokens), and llama.cpp's own
+graph reuse succeeds on every decode step (`LLAMA_GRAPH_RESULT_DEBUG=2`: can_reuse = 1 for all inputs). Disabling
+CUDA graphs (`GGML_CUDA_DISABLE_GRAPHS=1`) does not slow the token down (5.9 vs 7.1 tok/s, within this run's noise),
+so launch latency is not where the ~40 ms go. Note: llama-bench's generated tokens are degenerate (no prompt) and route
+to cold experts, so its tok/s for hot configs is not comparable with the server's; only the server numbers count.
+Next: time the scheduler's per-split synchronization and host<->device copies directly.
+
+## IQ2_XXS (unsloth UD-IQ2_XXS, 210 GiB, 13.0 MB per expert, commit c0067056)
+The IQ quants are the natural partner of the hot split: 2.3x more experts fit in the same VRAM.
+
+| config (32 threads, 128 tokens) | rows / host matmul | short | code | long |
+|---|---|---|---|---|
+| IQ2_XXS, all experts on CPU, 1 GPU | 8.00 | 4.13 | 5.21 | 4.10 |
+| IQ2_XXS, hot split 42 GiB (3,475 experts, 67% of training selections), 1 GPU | 2.11 | 8.07 | 8.33 | 7.66 |
+| **IQ2_XXS, hot split 2 x 60 GiB (9,928 experts, 96% of selections), 2 GPUs** | **1.09** | **16.36** | **15.82** | **10.90** |
+| Q4_K_S, hot split 2 x 60 GiB (4,252 experts, 72%), 2 GPUs (for reference) | 3.15 | 12.19 | 11.47 | 11.05 |
+
+* The IQ2_XXS host kernel is about twice as expensive per row as Q4_K (plain decode 4.1 vs ~7 tok/s), so on one GPU the
+  higher coverage only breaks even. On two GPUs almost everything is hot (1.1 rows per matmul) and decode reaches 16 tok/s
+  on short contexts: the token is now ~61 ms, of which the host expert work is ~15 ms.
+* The long prompt (3K context) drops to 10.9 tok/s with the same 1.1 rows: at this point attention over the context and the
+  per-layer hand-offs dominate, which is what the scheduler profile below measures.
+* Prefill is faster with IQ2 (70 vs 39 tok/s): the large-batch path copies fewer bytes to the GPU.
+* Quality was not evaluated here; IQ2_XXS is a 2.1-bit quant and will lose accuracy versus Q4_K_S.

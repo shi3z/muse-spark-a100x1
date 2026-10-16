@@ -237,5 +237,19 @@ Caveat for the numbers below: from 22:45 the fleet's renders raised the load ave
 Profile of the 2-GPU run (long prompt, 73 ms per token): GPUs 34 ms, CPU split **36.5 ms with 0.26 rows per matmul**.
 At this point the CPU split is almost pure overhead: 63 hand-offs per token, each waking the 32-thread pool for four ops
 that have nothing to do in ~3 of 4 layers (at 96% coverage a layer's 8 slots are all hot with probability 0.96^8 = 72%).
-Fix (patch 0012, `ggml-cpu`): when every MUL_MAT_ID of the CPU graph has no valid expert id, run that graph on one thread
-(no pool wake-up, no barriers). Measured next.
+Two candidate fixes, measured on the same config (profiles are from the long prompt, 64 decode steps):
+
+| variant | short | code | long | CPU split / token | token in split loop |
+|---|---|---|---|---|---|
+| OpenMP default wait policy | 18.26 | 11.87 | 13.57 | 36.5 ms | 73 ms |
+| + empty-expert CPU graphs single-threaded (patch 0011) | 15.14 | 16.65 | 14.75 | 36.6 ms | 73 ms |
+| **`OMP_WAIT_POLICY=ACTIVE` (workers spin between splits)** | 15.45 | 17.62 | **16.53** | **23.2 ms** | **59 ms** |
+| `OMP_WAIT_POLICY=ACTIVE` + single-threaded empty graphs | 18.78 | 13.99 | 16.32 | 29.0 ms | 65 ms |
+
+* Per-prompt decode numbers swing by +-20% between identical runs (the fleet's renders), so the profile columns are the
+  reliable comparison: keeping the OpenMP workers spinning is what removes a third of the CPU split; the single-thread
+  path adds nothing on top of it (it is now off by default). `OMP_WAIT_POLICY=ACTIVE` is the launcher default.
+* The token is now ~59 ms: 33.5 ms of GPU work (dense weights, hot experts, attention; near the A100's bandwidth bound),
+  23 ms of CPU split for 0.26 rows per matmul (63 parallel-region starts and ~250 barriers per token on shared cores),
+  ~2.5 ms of launches and copies. Next levers: IQ2 dense weights on the GPU (-5 ms), fused gate+up (fewer CPU ops),
+  and attention cost at long context.

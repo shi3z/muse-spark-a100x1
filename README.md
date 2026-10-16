@@ -141,3 +141,23 @@ Strata の本命、低ビット量子化 + hot expert 分割。同じ VRAM に 2
   A100×2 ではほぼ全部が hot になり（1.1 行/行列積）、短い文脈で **16 tok/s**。1 トークン ≈ 61 ms、うち CPU の expert は約 15 ms。
 * 3K 文脈の long では同じ 1.1 行でも 10.9 tok/s: ここまで来ると文脈長に比例する attention と層ごとの GPU↔CPU 往復が支配的。
 * prefill は IQ2 の方が速い（70 vs 39 tok/s、GPU へコピーするバイト数が少ない）。品質（perplexity）は未評価。
+
+## 異種精度 + スケジューラ最適化（現時点の最速: A100×2 で 16〜19 tok/s）
+プロファイル（`GGML_SCHED_PROFILE=1`、パッチ 0008）で 1 トークンの内訳を取ると、Q4_K_S hot 構成では GPU 34 ms、CPU 分割 66 ms
+（3.4 行）。CUDA graph は既に全分割で捕捉・再利用されており（`GGML_CUDA_GRAPH_DEBUG`）、カーネル起動は原因ではなかった。
+CPU 側は「行数」に比例するので、**ホストの expert は計算が最も安い Q4_K のまま、GPU の hot コピーだけ IQ2_XXS から取る**
+（`LLAMA_MOE_HOT_SRC=<IQ2 の shard 1>`、パッチ 0010）。同じ VRAM に 2.3 倍の expert が載り、CPU は 0.26 行/行列積になる。
+
+| 構成（A100×2、32 スレッド、128 トークン） | CPU 行/行列積 | short | code | long | CPU 分割 ms/token |
+|---|---|---|---|---|---|
+| IQ2_XXS 単独（hot 60 GiB×2） | 1.09 | 16.36 | 15.82 | 10.90 | 69 |
+| Q4_K ホスト + IQ2 hot 60 GiB×2 | 0.26 | 18.26 | 11.87 | 13.57 | 36.5 |
+| **同上 + `OMP_WAIT_POLICY=ACTIVE`** | 0.26 | 15.45 | 17.62 | **16.53** | **23.2** |
+| 同上 + ACTIVE + 空の expert 分割を単スレッド化（パッチ 0011） | 0.26 | 18.78 | 13.99 | 16.32 | 29.0 |
+
+* プロンプトごとの数値は同一構成でも ±20% ぶれる（艦隊の Blender レンダーが 7 プロセス常駐、load average 25〜45）。
+  信頼できるのはプロファイル列。**OpenMP ワーカーを分割の合間にスピンさせる（`OMP_WAIT_POLICY=ACTIVE`）だけで CPU 分割が 1/3 減る**。
+  これを `run_muse_spark.sh` のデフォルトにした。単スレッド化はその上では効かないのでデフォルト OFF。
+* 1 トークン ≈ 59 ms: GPU 33.5 ms（dense 重み + hot expert + attention、A100 の帯域上限に近い）、CPU 分割 23 ms
+  （0.26 行のために 63 回の並列領域起動と約 250 回のバリア）、起動・コピー 2.5 ms。
+* 次の手: dense 重みも IQ2 にして GPU 側を 5 ms 削る、gate+up を融合して CPU の op 数を減らす、長文脈の attention。

@@ -259,3 +259,21 @@ rows per host matmul: 3.28
 sched profile: 64 graphs, 73.20 ms/graph in the split loop: [CUDA0: 33.0 splits, sync 0.00 ms, copy-in 0.89 ms, compute-call 0.63 ms] [CUDA1: 31.0 splits, sync 0.00 ms, copy-in 0.86 ms, compute-call 0.61 ms] [CPU: 63.0 splits, sync 0.00 ms, copy-in 33.67 ms, compute-call 36.53 ms]
 rows per host matmul: 0.26
 === hetero tests done 23:03:43
+=== custom_q4host_iq2hot120g_2gpu_fastpath gpu2,3 23:11:05 Q4_K host + IQ2 hot 2x60 GiB, empty-expert CPU splits single-threaded; load 28.35, 31.95, 38.76
+[short] wall 22.7s prompt 158 tok @ 11.1 tok/s, decode 128 tok @ 15.14 tok/s | 'We need to explain CRISPR gene editing in about 200 words. Should be concise. Probably ~20'
+[code] wall 10.0s prompt 158 tok @ 9.8 tok/s, decode 128 tok @ 16.65 tok/s | 'We need to write a thread-safe bounded blocking queue in Rust with short explanation. Prov'
+[long] wall 81.4s prompt 3009 tok @ 39.5 tok/s, decode 128 tok @ 14.75 tok/s | 'We need to summarize policy in three sentences. The policy is 119 clauses, each says commi'
+sched profile: 64 graphs, 73.27 ms/graph in the split loop: [CUDA0: 33.0 splits, sync 0.00 ms, copy-in 0.90 ms, compute-call 0.66 ms] [CUDA1: 31.0 splits, sync 0.00 ms, copy-in 0.88 ms, compute-call 0.64 ms] [CPU: 63.0 splits, sync 0.00 ms, copy-in 33.59 ms, compute-call 36.58 ms]
+rows per host matmul: 0.26
+=== fastpath test done 23:12:59
+=== custom_q4host_iq2hot120g_2gpu_fastpath_ompactive gpu2,3 23:19:45 Q4_K host + IQ2 hot, OMP_WAIT_POLICY=ACTIVE GGML_CPU_EMPTY_MMID_SINGLE=1; load 27.00, 29.36, 34.67
+[short] wall 18.9s prompt 158 tok @ 13.0 tok/s, decode 128 tok @ 18.78 tok/s | 'We need to explain CRISPR gene editing in about 200 words. Should be concise. Probably ~20'
+[code] wall 10.8s prompt 158 tok @ 13.2 tok/s, decode 128 tok @ 13.99 tok/s | 'We need to write a thread-safe bounded blocking queue in Rust with short explanation. Prov'
+[long] wall 80.7s prompt 3009 tok @ 39.5 tok/s, decode 128 tok @ 16.32 tok/s | 'We need to summarize policy in three sentences. The policy is 119 clauses, each says commi'
+sched profile: 64 graphs, 65.48 ms/graph in the split loop: [CUDA0: 33.0 splits, sync 0.00 ms, copy-in 0.85 ms, compute-call 0.63 ms] [CUDA1: 31.0 splits, sync 0.00 ms, copy-in 0.86 ms, compute-call 0.61 ms] [CPU: 63.0 splits, sync 0.00 ms, copy-in 33.50 ms, compute-call 29.02 ms]
+=== custom_q4host_iq2hot120g_2gpu_nofastpath_ompactive gpu2,3 23:28:24 Q4_K host + IQ2 hot, OMP_WAIT_POLICY=ACTIVE GGML_CPU_EMPTY_MMID_SINGLE=0; load 22.38, 29.06, 33.64
+[short] wall 20.1s prompt 158 tok @ 13.3 tok/s, decode 128 tok @ 15.45 tok/s | 'We need to explain CRISPR gene editing in about 200 words. Should be concise. Probably ~20'
+[code] wall 8.9s prompt 158 tok @ 13.1 tok/s, decode 128 tok @ 17.62 tok/s | 'We need to write a thread-safe bounded blocking queue in Rust with short explanation. Prov'
+[long] wall 80.4s prompt 3009 tok @ 39.6 tok/s, decode 128 tok @ 16.53 tok/s | 'We need to summarize policy in three sentences. The policy is 119 clauses, each says commi'
+sched profile: 64 graphs, 59.40 ms/graph in the split loop: [CUDA0: 33.0 splits, sync 0.00 ms, copy-in 0.82 ms, compute-call 0.54 ms] [CUDA1: 31.0 splits, sync 0.00 ms, copy-in 0.81 ms, compute-call 0.51 ms] [CPU: 63.0 splits, sync 0.00 ms, copy-in 33.47 ms, compute-call 23.22 ms]
+=== omp tests done 23:30:13

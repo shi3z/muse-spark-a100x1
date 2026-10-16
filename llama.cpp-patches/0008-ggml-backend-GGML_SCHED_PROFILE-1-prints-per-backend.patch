@@ -1,7 +1,7 @@
 From 441e3c29b12f235ffd3076642e8ba1d7ee13980c Mon Sep 17 00:00:00 2001
 From: shi3z <shi3z@me.com>
 Date: Fri, 16 Oct 2026 21:51:01 +0000
-Subject: [PATCH 08/11] ggml-backend: GGML_SCHED_PROFILE=1 prints per-backend
+Subject: [PATCH 08/12] ggml-backend: GGML_SCHED_PROFILE=1 prints per-backend
  sync / copy-in / compute-call time of the split loop
 
 Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>

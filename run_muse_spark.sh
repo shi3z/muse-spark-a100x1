@@ -12,6 +12,8 @@ NCMOE=${NCMOE:-56}                 # layers whose experts stay on the CPU (62 = 
 PORT=${PORT:-8020}
 EXTRA=${EXTRA:-}
 export CUDA_VISIBLE_DEVICES=$GPU
+# keep the OpenMP workers spinning between the per-layer CPU splits (measured: CPU split 36 -> 23 ms/token with the hot split)
+export OMP_WAIT_POLICY=${OMP_WAIT_POLICY:-ACTIVE}
 # NUMACTL=1: interleave the (non-mmap) weight allocation over both sockets so the expert stream uses both memory controllers
 PREFIX=""
 [ "${NUMACTL:-1}" = "1" ] && command -v numactl >/dev/null && PREFIX="numactl --interleave=all"

@@ -217,3 +217,45 @@ rows per host matmul: 2.11
 [long] wall 52.3s prompt 3009 tok @ 70.9 tok/s, decode 128 tok @ 10.90 tok/s | 'We need to summarize policy in three sentences. The policy is 119 clauses: committee shall'
 rows per host matmul: 1.09
 === iq2 tests done 22:05:07
+=== custom_iq2_hot120g_2gpu_t8 gpu2,3 22:20:36 IQ2_XXS threads=8 hot 2x60 GiB
+[short] wall 23.8s prompt 158 tok @ 12.2 tok/s, decode 128 tok @ 11.69 tok/s | 'We need to explain CRISPR gene editing in about 200 words. Should be concise, accurate. Pr'
+[code] wall 22.4s prompt 158 tok @ 2.1 tok/s, decode 128 tok @ 10.25 tok/s | 'We need to provide code for thread-safe bounded blocking queue in Rust with short explanat'
+[long] wall 56.4s prompt 3009 tok @ 69.7 tok/s, decode 128 tok @ 8.44 tok/s | 'We need to summarize policy in three sentences. The policy is 119 clauses: committee shall'
+sched profile: 64 graphs, 124.84 ms/graph in the split loop: [CUDA0: 33.0 splits, sync 0.00 ms, copy-in 0.88 ms, compute-call 0.54 ms] [CUDA1: 31.0 splits, sync 0.00 ms, copy-in 1.10 ms, compute-call 0.52 ms] [CPU: 63.0 splits, sync 0.01 ms, copy-in 35.80 ms, compute-call 85.96 ms]
+rows per host matmul: 1.09
+=== custom_iq2_hot120g_2gpu_t16 gpu2,3 22:26:04 IQ2_XXS threads=16 hot 2x60 GiB
+[short] wall 20.5s prompt 158 tok @ 13.3 tok/s, decode 128 tok @ 14.88 tok/s | 'We need to explain CRISPR gene editing in about 200 words. Should be concise, accurate. Pr'
+[code] wall 14.8s prompt 158 tok @ 3.7 tok/s, decode 128 tok @ 14.07 tok/s | 'We need to provide code for thread-safe bounded blocking queue in Rust with short explanat'
+[long] wall 53.9s prompt 3009 tok @ 70.7 tok/s, decode 128 tok @ 9.71 tok/s | 'We need to summarize policy in three sentences. The policy is 119 clauses: committee shall'
+sched profile: 64 graphs, 108.15 ms/graph in the split loop: [CUDA0: 33.0 splits, sync 0.00 ms, copy-in 0.83 ms, compute-call 0.60 ms] [CUDA1: 31.0 splits, sync 0.00 ms, copy-in 1.07 ms, compute-call 0.58 ms] [CPU: 63.0 splits, sync 0.00 ms, copy-in 35.76 ms, compute-call 69.28 ms]
+rows per host matmul: 1.09
+=== iq2 thread sweep done 22:27:33
+=== custom_iq2_hot120g_2gpu_trim gpu2,3 22:38:27 IQ2_XXS threads=32 hot 2x60 GiB, trimmed graph (no cold mask, add on GPU)
+[short] wall 18.5s prompt 158 tok @ 15.0 tok/s, decode 128 tok @ 15.95 tok/s | 'We need to explain CRISPR gene editing in about 200 words. Should be concise, accurate. Pr'
+[code] wall 10.8s prompt 158 tok @ 7.5 tok/s, decode 128 tok @ 16.07 tok/s | 'We need to provide code for thread-safe bounded blocking queue in Rust with short explanat'
+[long] wall 52.9s prompt 3009 tok @ 71.2 tok/s, decode 128 tok @ 10.21 tok/s | 'We need to summarize policy in three sentences. The policy is 119 clauses: committee shall'
+sched profile: 64 graphs, 121.03 ms/graph in the split loop: [CUDA0: 33.0 splits, sync 0.00 ms, copy-in 0.87 ms, compute-call 0.64 ms] [CUDA1: 31.0 splits, sync 0.00 ms, copy-in 0.87 ms, compute-call 0.62 ms] [CPU: 63.0 splits, sync 0.00 ms, copy-in 36.00 ms, compute-call 82.01 ms]
+=== trim test done 22:39:50
+=== custom_q4host_iq2hot42g_1gpu gpu2 22:45:51 Q4_K_S host experts + IQ2_XXS hot copies, threads=32
+5.03.269.531 W load_tensors_moe_hot: hot experts will be read from /mnt/ssd/models/gguf/Muse-Spark-Open-816B-A42B-UD-IQ2_XXS/Muse-Spark-Open-816B-A42B-UD-IQ2_XX
+5.03.271.725 W load_tensors_moe_hot: 62 layers, 42.00 GiB of hot experts on CUDA0
+5.13.820.487 W load_tensors_moe_hot: 62 layers, 42.00 GiB of hot experts uploaded
+2, 67557 MiB
+[short] wall 32.2s prompt 158 tok @ 12.5 tok/s, decode 128 tok @ 6.51 tok/s | 'We need to explain CRISPR gene editing in about 200 words. Should be concise. Probably ~18'
+[code] wall 15.1s prompt 158 tok @ 9.7 tok/s, decode 128 tok @ 9.94 tok/s | 'We need to provide code for thread-safe bounded blocking queue in Rust with short explanat'
+[long] wall 89.7s prompt 3009 tok @ 39.6 tok/s, decode 128 tok @ 7.41 tok/s | 'We need to summarize policy in three sentences. The policy is 119 clauses: committee shall'
+sched profile: 64 graphs, 157.93 ms/graph in the split loop: [CUDA0: 63.0 splits, sync 0.00 ms, copy-in 1.76 ms, compute-call 1.55 ms] [CPU: 63.0 splits, sync 0.00 ms, copy-in 33.26 ms, compute-call 121.34 ms]
+rows per host matmul: 3.28
+=== note 22:48:34: load average now 38 (seven Blender renders at 100% each); CPU-side numbers from ~22:45 on are inflated
+=== custom_q4host_iq2hot120g_2gpu gpu2,3 23:01:48 Q4_K_S host experts + IQ2_XXS hot copies, threads=32
+11.53.449.602 W load_tensors_moe_hot: 32 layers, 61.88 GiB of hot experts on CUDA0
+11.53.451.616 W load_tensors_moe_hot: 30 layers, 58.10 GiB of hot experts on CUDA1
+12.28.099.422 W load_tensors_moe_hot: 62 layers, 119.98 GiB of hot experts uploaded
+2, 78591 MiB
+3, 70339 MiB
+[short] wall 19.4s prompt 158 tok @ 12.7 tok/s, decode 128 tok @ 18.26 tok/s | 'We need to explain CRISPR gene editing in about 200 words. Should be concise. Probably ~20'
+[code] wall 12.8s prompt 158 tok @ 10.4 tok/s, decode 128 tok @ 11.87 tok/s | 'We need to write a thread-safe bounded blocking queue in Rust with short explanation. Prov'
+[long] wall 82.3s prompt 3009 tok @ 39.5 tok/s, decode 128 tok @ 13.57 tok/s | 'We need to summarize policy in three sentences. The policy is 119 clauses, each says commi'
+sched profile: 64 graphs, 73.20 ms/graph in the split loop: [CUDA0: 33.0 splits, sync 0.00 ms, copy-in 0.89 ms, compute-call 0.63 ms] [CUDA1: 31.0 splits, sync 0.00 ms, copy-in 0.86 ms, compute-call 0.61 ms] [CPU: 63.0 splits, sync 0.00 ms, copy-in 33.67 ms, compute-call 36.53 ms]
+rows per host matmul: 0.26
+=== hetero tests done 23:03:43

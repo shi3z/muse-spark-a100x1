@@ -1,0 +1,107 @@
+From 441e3c29b12f235ffd3076642e8ba1d7ee13980c Mon Sep 17 00:00:00 2001
+From: shi3z <shi3z@me.com>
+Date: Fri, 16 Oct 2026 21:51:01 +0000
+Subject: [PATCH 08/11] ggml-backend: GGML_SCHED_PROFILE=1 prints per-backend
+ sync / copy-in / compute-call time of the split loop
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+---
+ ggml/src/ggml-backend.cpp | 45 +++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 45 insertions(+)
+
+diff --git a/ggml/src/ggml-backend.cpp b/ggml/src/ggml-backend.cpp
+index ffbcba366..cbf4dae9d 100644
+--- a/ggml/src/ggml-backend.cpp
++++ b/ggml/src/ggml-backend.cpp
+@@ -1862,10 +1862,27 @@ static void ggml_backend_sched_copy_input(ggml_backend_sched_t sched, struct ggm
+     }
+ }
+ 
++// GGML_SCHED_PROFILE=1: per-backend time spent in the split loop (sync of the previous backend, input copies, compute call)
++struct ggml_sched_profile {
++    bool    on = false;
++    int64_t n_graphs = 0;
++    int64_t n_splits[GGML_SCHED_MAX_BACKENDS] = {};
++    int64_t sync_us[GGML_SCHED_MAX_BACKENDS] = {};
++    int64_t copy_us[GGML_SCHED_MAX_BACKENDS] = {};
++    int64_t compute_us[GGML_SCHED_MAX_BACKENDS] = {};
++    int64_t total_us = 0;
++};
++static ggml_sched_profile g_sched_prof;
++
+ static enum ggml_status ggml_backend_sched_compute_splits(ggml_backend_sched_t sched) {
+     GGML_ASSERT(sched);
+     struct ggml_backend_sched_split * splits = sched->splits;
+ 
++    static int prof_init = 0;
++    if (!prof_init) { prof_init = 1; const char * e = getenv("GGML_SCHED_PROFILE"); g_sched_prof.on = e && atoi(e) != 0; }
++    const bool prof = g_sched_prof.on;
++    const int64_t t_graph0 = prof ? ggml_time_us() : 0;
++
+     int prev_backend_id = -1;
+ 
+     for (int split_id = 0; split_id < sched->n_splits; split_id++) {
+@@ -1873,6 +1890,8 @@ static enum ggml_status ggml_backend_sched_compute_splits(ggml_backend_sched_t s
+         int split_backend_id = split->backend_id;
+         ggml_backend_t split_backend = sched->backends[split_backend_id];
+ 
++        const int64_t t0 = prof ? ggml_time_us() : 0;
++
+         // ensure the previous split's async work has completed before we start
+         // this split, the allocator may have reused buffer regions across splits
+         if (split->n_inputs == 0 && prev_backend_id >= 0 && prev_backend_id != split_backend_id) {
+@@ -1883,6 +1902,8 @@ static enum ggml_status ggml_backend_sched_compute_splits(ggml_backend_sched_t s
+             }
+         }
+ 
++        const int64_t t1 = prof ? ggml_time_us() : 0;
++
+         // copy the input tensors to the split backend
+         // the weights in host memory are copied last, so that the copy callback can read the other inputs of the split
+         for (int input_id = 0; input_id < split->n_inputs; input_id++) {
+@@ -1896,11 +1917,20 @@ static enum ggml_status ggml_backend_sched_compute_splits(ggml_backend_sched_t s
+             }
+         }
+ 
++        const int64_t t2 = prof ? ggml_time_us() : 0;
++
+         if (!sched->callback_eval) {
+             enum ggml_status ec = ggml_backend_graph_compute_async(split_backend, &split->graph);
+             if (ec != GGML_STATUS_SUCCESS) {
+                 return ec;
+             }
++            if (prof) {
++                const int64_t t3 = ggml_time_us();
++                g_sched_prof.n_splits[split_backend_id]++;
++                g_sched_prof.sync_us[split_backend_id]    += t1 - t0;
++                g_sched_prof.copy_us[split_backend_id]    += t2 - t1;
++                g_sched_prof.compute_us[split_backend_id] += t3 - t2;
++            }
+         } else {
+             // similar to ggml_backend_compare_graph_backend
+             for (int j0 = 0; j0 < split->graph.n_nodes; j0++) {
+@@ -1943,6 +1973,21 @@ static enum ggml_status ggml_backend_sched_compute_splits(ggml_backend_sched_t s
+         prev_backend_id = split_backend_id;
+     }
+ 
++    if (prof) {
++        g_sched_prof.total_us += ggml_time_us() - t_graph0;
++        if (++g_sched_prof.n_graphs % 64 == 0) {
++            fprintf(stderr, "sched profile: %lld graphs, %.2f ms/graph in the split loop:", (long long) g_sched_prof.n_graphs, g_sched_prof.total_us / 1000.0 / g_sched_prof.n_graphs);
++            for (int b = 0; b < sched->n_backends; b++) {
++                if (g_sched_prof.n_splits[b] == 0) continue;
++                const double n = g_sched_prof.n_graphs;
++                fprintf(stderr, " [%s: %.1f splits, sync %.2f ms, copy-in %.2f ms, compute-call %.2f ms]", ggml_backend_name(sched->backends[b]),
++                    g_sched_prof.n_splits[b] / n, g_sched_prof.sync_us[b] / 1000.0 / n, g_sched_prof.copy_us[b] / 1000.0 / n, g_sched_prof.compute_us[b] / 1000.0 / n);
++            }
++            fprintf(stderr, "\n");
++            g_sched_prof = ggml_sched_profile(); g_sched_prof.on = true;
++        }
++    }
++
+     return GGML_STATUS_SUCCESS;
+ }
+ 
+-- 
+2.34.1
+

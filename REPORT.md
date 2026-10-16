@@ -203,3 +203,39 @@ The IQ quants are the natural partner of the hot split: 2.3x more experts fit in
   per-layer hand-offs dominate, which is what the scheduler profile below measures.
 * Prefill is faster with IQ2 (70 vs 39 tok/s): the large-batch path copies fewer bytes to the GPU.
 * Quality was not evaluated here; IQ2_XXS is a 2.1-bit quant and will lose accuracy versus Q4_K_S.
+
+## Scheduler profile: where the token goes (Q4_K_S, 2 GPUs, hot split, 32 threads, `GGML_SCHED_PROFILE=1`)
+Per token, averaged over 64 decode steps of the short prompt (12.3 tok/s = ~105 ms in the split loop):
+
+| backend | splits / token | waiting for the other side + copy-in | compute call |
+|---|---|---|---|
+| CUDA0 (layers 0-30) | 33 | 0.95 ms | 1.16 ms (async launches of captured graphs) |
+| CUDA1 (layers 31-61) | 31 | 1.18 ms | 1.10 ms |
+| CPU (cold experts) | 63 | **34.4 ms** (= the GPUs' execution time, waited for in the synchronous D2H copy) | **66.5 ms** |
+
+* The GPUs' real work is ~34 ms per token (dense weights 16 GiB + 15 GB of hot-expert rows + attention; near the
+  memory-bandwidth bound of an A100). Kernel launches cost ~2 ms. Hand-off copies are negligible.
+* The CPU split costs 66-77 ms per token with only 3.4 rows per matmul, while 8 rows cost ~105 ms: most of it is no
+  longer dot products but per-op overhead (189 matmul-id ops + activation/mask ops per token, each a 32-thread barrier
+  and thread wake-up, on a box where the fleet's renders also compete for cores). That is why 24 vs 32 threads did not
+  matter and 40 threads collapsed.
+* Consequences: (1) fewer threads should now be *faster* for the hot configs (measured next); (2) fusing gate+up into one
+  mul_mat_id would remove a third of the CPU ops; (3) with IQ2 on two GPUs most layers have zero cold rows, so skipping the
+  CPU hand-off for those layers (a dynamic decision the static graph cannot make today) is the next structural win.
+
+## Heterogeneous precision: Q4_K experts on the host, IQ2_XXS copies on the GPU (`LLAMA_MOE_HOT_SRC`, patch 0010)
+Motivation: the host cost is per row and the Q4_K row is 3-4x cheaper than the IQ2_XXS row, while the GPU budget fits
+2.3x more IQ2 experts. The loader now reads the hot experts (and their type) from a second GGUF of the same model.
+Caveat for the numbers below: from 22:45 the fleet's renders raised the load average from ~25 to 38 (seven processes at
+100% on the 24 cores we share), so the CPU split is slower than in the earlier runs; compare only with that in mind.
+
+| config (32 threads, 128 tokens) | rows / host matmul | short | code | long |
+|---|---|---|---|---|
+| 1 GPU: Q4_K host + IQ2 hot 42 GiB (3,475 experts) | 3.28 | 6.51 | 9.94 | 7.41 |
+| **2 GPUs: Q4_K host + IQ2 hot 2 x 60 GiB (9,928 experts)** | **0.26** | **18.26** | 11.87 | **13.57** |
+
+Profile of the 2-GPU run (long prompt, 73 ms per token): GPUs 34 ms, CPU split **36.5 ms with 0.26 rows per matmul**.
+At this point the CPU split is almost pure overhead: 63 hand-offs per token, each waking the 32-thread pool for four ops
+that have nothing to do in ~3 of 4 layers (at 96% coverage a layer's 8 slots are all hot with probability 0.96^8 = 72%).
+Fix (patch 0012, `ggml-cpu`): when every MUL_MAT_ID of the CPU graph has no valid expert id, run that graph on one thread
+(no pool wake-up, no barriers). Measured next.

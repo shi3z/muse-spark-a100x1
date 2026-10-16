@@ -1,0 +1,147 @@
+From d87ce6619ab41bdb6d4508164ae019f920f254fd Mon Sep 17 00:00:00 2001
+From: shi3z <shi3z@me.com>
+Date: Fri, 16 Oct 2026 22:37:52 +0000
+Subject: [PATCH 10/11] hot-expert split: LLAMA_MOE_HOT_SRC takes the hot
+ experts (and their type) from a second GGUF of the same model
+
+Heterogeneous precision: the host keeps the Q4_K experts (cheapest per row to compute), the GPU holds IQ2 copies
+(2.3x more of them fit).
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+---
+ src/llama-model.cpp | 94 +++++++++++++++++++++++++++++++++++++++++----
+ 1 file changed, 87 insertions(+), 7 deletions(-)
+
+diff --git a/src/llama-model.cpp b/src/llama-model.cpp
+index 47aeddf46..9f1391c99 100644
+--- a/src/llama-model.cpp
++++ b/src/llama-model.cpp
+@@ -8,6 +8,8 @@
+ #include "llama-cparams.h"
+ #include "llama-model-loader.h"
+ 
++#include "gguf.h"
++
+ #include "llama-kv-cache.h"
+ #include "llama-kv-cache-iswa.h"
+ #include "llama-kv-cache-dsa.h"
+@@ -2095,6 +2097,74 @@ void llama_model_base::load_tensors_moe_hot(llama_model_loader & ml) {
+         return;
+     }
+ 
++    // LLAMA_MOE_HOT_SRC=<first shard of another GGUF of the same model>: take the hot experts (and their type) from there,
++    // e.g. IQ2_XXS copies on the GPU while the host keeps the cheaper-to-compute Q4_K experts
++    struct hot_src_tensor { int file; size_t offs; ggml_type type; int64_t ne[GGML_MAX_DIMS]; size_t nbytes; };
++    std::vector<std::unique_ptr<llama_file>> hot_files;
++    std::map<std::string, hot_src_tensor> hot_src;
++    if (const char * src_path = getenv("LLAMA_MOE_HOT_SRC"); src_path && src_path[0]) {
++        std::vector<std::string> shards;
++        {
++            ggml_context * ctx_meta = nullptr;
++            gguf_init_params gp = { /*.no_alloc =*/ true, /*.ctx =*/ &ctx_meta };
++            gguf_context * g = gguf_init_from_file(src_path, gp);
++            if (!g) {
++                throw std::runtime_error(format("LLAMA_MOE_HOT_SRC: cannot open %s", src_path));
++            }
++            const int64_t kid = gguf_find_key(g, "split.count");
++            const int n_split = kid >= 0 ? gguf_get_val_u16(g, kid) : 1;
++            ggml_free(ctx_meta);
++            gguf_free(g);
++            if (n_split > 1) {
++                char prefix[4096];
++                if (llama_split_prefix(prefix, sizeof(prefix), src_path, 0, n_split) == 0) {
++                    throw std::runtime_error(format("LLAMA_MOE_HOT_SRC: %s is not the first shard of a split GGUF", src_path));
++                }
++                for (int i = 0; i < n_split; ++i) {
++                    char path[4096];
++                    llama_split_path(path, sizeof(path), prefix, i, n_split);
++                    shards.push_back(path);
++                }
++            } else {
++                shards.push_back(src_path);
++            }
++        }
++        for (size_t fi = 0; fi < shards.size(); ++fi) {
++            ggml_context * ctx_meta = nullptr;
++            gguf_init_params gp = { /*.no_alloc =*/ true, /*.ctx =*/ &ctx_meta };
++            gguf_context * g = gguf_init_from_file(shards[fi].c_str(), gp);
++            if (!g) {
++                throw std::runtime_error(format("LLAMA_MOE_HOT_SRC: cannot open shard %s", shards[fi].c_str()));
++            }
++            const size_t data_offs = gguf_get_data_offset(g);
++            for (int64_t ti = 0; ti < gguf_get_n_tensors(g); ++ti) {
++                const char * name = gguf_get_tensor_name(g, ti);
++                if (strstr(name, "_exps.weight") == nullptr) {
++                    continue;
++                }
++                const ggml_tensor * t = ggml_get_tensor(ctx_meta, name);
++                hot_src_tensor hs = { (int) fi, data_offs + gguf_get_tensor_offset(g, ti), t->type, {}, ggml_nbytes(t) };
++                memcpy(hs.ne, t->ne, sizeof(hs.ne));
++                hot_src[name] = hs;
++            }
++            ggml_free(ctx_meta);
++            gguf_free(g);
++            hot_files.emplace_back(new llama_file(shards[fi].c_str(), "rb"));
++        }
++        LLAMA_LOG_WARN("%s: hot experts will be read from %s (%zu shards, %zu expert tensors)\n", __func__, src_path, shards.size(), hot_src.size());
++    }
++    auto hot_type_of = [&](const ggml_tensor * src) -> ggml_type {
++        auto it = hot_src.find(ggml_get_name(src));
++        if (it == hot_src.end()) {
++            return src->type;
++        }
++        const auto & hs = it->second;
++        if (hs.ne[0] != src->ne[0] || hs.ne[1] != src->ne[1] || hs.ne[2] != src->ne[2]) {
++            throw std::runtime_error(format("LLAMA_MOE_HOT_SRC: shape mismatch for %s", ggml_get_name(src)));
++        }
++        return hs.type;
++    };
++
+     moe_hot.layers.assign(n_layer, llama_moe_hot_layer());
+ 
+     // one context + buffer per device: the hot experts of a layer live on the device that runs the layer
+@@ -2117,7 +2187,7 @@ void llama_model_base::load_tensors_moe_hot(llama_model_loader & ml) {
+             auto & h = moe_hot.layers[pl.il];
+             h.n_hot = (int32_t) pl.experts.size();
+             auto mk = [&](ggml_tensor * src, const char * suffix) {
+-                ggml_tensor * t = ggml_new_tensor_3d(ctx, src->type, src->ne[0], src->ne[1], h.n_hot);
++                ggml_tensor * t = ggml_new_tensor_3d(ctx, hot_type_of(src), src->ne[0], src->ne[1], h.n_hot);
+                 ggml_format_name(t, "%s.hot%s", ggml_get_name(src), suffix);
+                 group_bytes += ggml_nbytes(t);
+                 return t;
+@@ -2149,16 +2219,26 @@ void llama_model_base::load_tensors_moe_hot(llama_model_loader & ml) {
+         const auto & layer = layers[pl.il];
+         auto & h = moe_hot.layers[pl.il];
+         for (auto [src, dst] : { std::make_pair(layer.ffn_up_exps, h.up), std::make_pair(layer.ffn_gate_exps, h.gate), std::make_pair(layer.ffn_down_exps, h.down) }) {
+-            const auto * w = ml.get_weight(ggml_get_name(src));
+-            if (w == nullptr) {
+-                throw std::runtime_error(format("hot-expert split: weight %s not found", ggml_get_name(src)));
++            llama_file * file = nullptr;
++            size_t base_offs = 0, expert_bytes = 0;
++            if (auto it = hot_src.find(ggml_get_name(src)); it != hot_src.end()) {
++                file = hot_files.at(it->second.file).get();
++                base_offs = it->second.offs;
++                expert_bytes = it->second.nbytes / it->second.ne[2];
++            } else {
++                const auto * w = ml.get_weight(ggml_get_name(src));
++                if (w == nullptr) {
++                    throw std::runtime_error(format("hot-expert split: weight %s not found", ggml_get_name(src)));
++                }
++                file = ml.files.at(w->idx).get();
++                base_offs = w->offs;
++                expert_bytes = src->nb[2];
+             }
+-            const auto & file = ml.files.at(w->idx);
+-            const size_t expert_bytes = src->nb[2];
++            GGML_ASSERT(expert_bytes == dst->nb[2]);
+             staging.resize(expert_bytes);
+             for (int32_t slot = 0; slot < h.n_hot; ++slot) {
+                 const int32_t e = pl.experts[slot];
+-                file->seek(w->offs + (size_t) e * expert_bytes, SEEK_SET);
++                file->seek(base_offs + (size_t) e * expert_bytes, SEEK_SET);
+                 file->read_raw(staging.data(), expert_bytes);
+                 ggml_backend_tensor_set(dst, staging.data(), (size_t) slot * dst->nb[2], expert_bytes);
+                 n_bytes += expert_bytes;
+-- 
+2.34.1
+

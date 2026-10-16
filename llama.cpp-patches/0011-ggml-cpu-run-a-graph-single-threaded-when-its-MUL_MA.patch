@@ -1,0 +1,69 @@
+From af16531855c29753546d37a531baa645bef687fe Mon Sep 17 00:00:00 2001
+From: shi3z <shi3z@me.com>
+Date: Fri, 16 Oct 2026 23:05:38 +0000
+Subject: [PATCH 11/11] ggml-cpu: run a graph single-threaded when its
+ MUL_MAT_ID ops have no valid expert id (hot-expert split, all slots on the
+ device)
+
+Avoids waking the pool and the per-op barriers for the many layers whose cold chain is empty.
+GGML_CPU_EMPTY_MMID_SINGLE=0 disables.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+---
+ ggml/src/ggml-cpu/ggml-cpu.cpp | 37 +++++++++++++++++++++++++++++++++-
+ 1 file changed, 36 insertions(+), 1 deletion(-)
+
+diff --git a/ggml/src/ggml-cpu/ggml-cpu.cpp b/ggml/src/ggml-cpu/ggml-cpu.cpp
+index 81ff5d79f..4b3a8d5aa 100644
+--- a/ggml/src/ggml-cpu/ggml-cpu.cpp
++++ b/ggml/src/ggml-cpu/ggml-cpu.cpp
+@@ -167,10 +167,45 @@ static enum ggml_status ggml_backend_cpu_graph_plan_compute(ggml_backend_t backe
+     GGML_UNUSED(backend);
+ }
+ 
++// hot-expert split: a graph whose MUL_MAT_ID ops have no valid expert id (every slot is computed elsewhere, ids are -1)
++// does almost no work; running it on one thread avoids waking the pool and the per-op barriers (GGML_CPU_EMPTY_MMID_SINGLE=0 disables)
++static bool ggml_backend_cpu_graph_is_empty_mmid(const struct ggml_cgraph * cgraph) {
++    static int enabled = -1;
++    if (enabled < 0) {
++        const char * e = getenv("GGML_CPU_EMPTY_MMID_SINGLE");
++        enabled = e ? (atoi(e) != 0) : 1;
++    }
++    if (!enabled) {
++        return false;
++    }
++    bool has_mmid = false;
++    for (int i = 0; i < cgraph->n_nodes; i++) {
++        const struct ggml_tensor * node = cgraph->nodes[i];
++        if (node->op != GGML_OP_MUL_MAT_ID) {
++            continue;
++        }
++        has_mmid = true;
++        const struct ggml_tensor * ids = node->src[2];
++        if (ids == NULL || ids->type != GGML_TYPE_I32 || ids->data == NULL || ids->ne[1] > 8) {
++            return false;
++        }
++        for (int64_t i1 = 0; i1 < ids->ne[1]; i1++) {
++            for (int64_t i0 = 0; i0 < ids->ne[0]; i0++) {
++                if (*(const int32_t *) ((const char *) ids->data + i1*ids->nb[1] + i0*ids->nb[0]) >= 0) {
++                    return false;
++                }
++            }
++        }
++    }
++    return has_mmid;
++}
++
+ static enum ggml_status ggml_backend_cpu_graph_compute(ggml_backend_t backend, struct ggml_cgraph * cgraph) {
+     struct ggml_backend_cpu_context * cpu_ctx = (struct ggml_backend_cpu_context *)backend->context;
+ 
+-    struct ggml_cplan cplan = ggml_graph_plan(cgraph, cpu_ctx->n_threads, cpu_ctx->threadpool);
++    const int n_threads = ggml_backend_cpu_graph_is_empty_mmid(cgraph) ? 1 : cpu_ctx->n_threads;
++
++    struct ggml_cplan cplan = ggml_graph_plan(cgraph, n_threads, cpu_ctx->threadpool);
+ 
+     if (cpu_ctx->work_size < cplan.work_size) {
+         delete[] cpu_ctx->work_data;
+-- 
+2.34.1
+

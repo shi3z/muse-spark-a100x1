@@ -253,3 +253,23 @@ Two candidate fixes, measured on the same config (profiles are from the long pro
   23 ms of CPU split for 0.26 rows per matmul (63 parallel-region starts and ~250 barriers per token on shared cores),
   ~2.5 ms of launches and copies. Next levers: IQ2 dense weights on the GPU (-5 ms), fused gate+up (fewer CPU ops),
   and attention cost at long context.
+
+## IQ3_XXS (unsloth UD-IQ3_XXS, 317 GiB, 20 MB per expert; box quieter during these runs, load average 10-17)
+| config (32 threads, 128 tokens) | rows / host matmul | short | code | long | CPU split | GPU |
+|---|---|---|---|---|---|---|
+| IQ3_XXS, all experts on CPU, 1 GPU | 8.00 | 5.28 | 5.32 | 4.84 | 181 ms | 21.6 ms |
+| IQ3_XXS, hot 42 GiB (2,248 experts, 55%), 1 GPU | 3.34 | 8.72 | 6.93 | 6.49 | 111 ms | 38.6 ms |
+| IQ3_XXS, hot 2 x 60 GiB (6,424 experts, 86%), 2 GPUs | 1.39 | 12.21 | 12.17 | 10.42 | 56 ms | 38.7 ms |
+
+* The IQ3_XXS host row costs ~22 ms per row-set across the 62 layers (Q4_K ~13, IQ2_XXS ~25+); IQ3 on its own is never
+  the fastest. Its natural use is as the *GPU copy* in the heterogeneous setup when IQ2's quality loss is too much:
+  Q4_K host + IQ3 hot (86% coverage on two GPUs) would land between the Q4+IQ2 (0.26 rows) and IQ3-only (1.39 rows) points.
+  Not measured here.
+
+## Summary of the fastest configuration per GPU count (decode tok/s, short / code / long; identical greedy text)
+| GPUs | configuration | tok/s |
+|---|---|---|
+| 1 x A100 | Q4_K_S, hot split 42 GiB (decode-trained list), 32 threads, `OMP_WAIT_POLICY=ACTIVE` | 9.2 / 8.3 / 8.4 (measured before the OpenMP change) |
+| 2 x A100 | Q4_K_S host experts + IQ2_XXS hot copies 2 x 60 GiB, `OMP_WAIT_POLICY=ACTIVE` | 15.5-18.8 / 14.0-17.6 / 16.3-16.5 |
+
+Everything above was measured while the fleet's Blender renders shared the CPUs; on an idle box the CPU-side terms shrink.

@@ -161,3 +161,21 @@ CPU 側は「行数」に比例するので、**ホストの expert は計算が
 * 1 トークン ≈ 59 ms: GPU 33.5 ms（dense 重み + hot expert + attention、A100 の帯域上限に近い）、CPU 分割 23 ms
   （0.26 行のために 63 回の並列領域起動と約 250 回のバリア）、起動・コピー 2.5 ms。
 * 次の手: dense 重みも IQ2 にして GPU 側を 5 ms 削る、gate+up を融合して CPU の op 数を減らす、長文脈の attention。
+
+## IQ3_XXS（unsloth UD-IQ3_XXS、317 GiB、expert 1 個 20 MB）
+| 構成（32 スレッド） | CPU 行/行列積 | short | code | long | CPU 分割 | GPU |
+|---|---|---|---|---|---|---|
+| IQ3_XXS、全 expert CPU、A100×1 | 8.00 | 5.28 | 5.32 | 4.84 | 181 ms | 21.6 ms |
+| IQ3_XXS、hot 42 GiB（55%）、A100×1 | 3.34 | 8.72 | 6.93 | 6.49 | 111 ms | 38.6 ms |
+| IQ3_XXS、hot 60 GiB×2（86%）、A100×2 | 1.39 | 12.21 | 12.17 | 10.42 | 56 ms | 38.7 ms |
+
+IQ3 の CPU 行コストは Q4_K と IQ2 の中間（約 22 ms/行セット）で、IQ3 単独が最速になる場面はない。IQ2 の品質劣化が
+許容できない場合に「Q4_K ホスト + IQ3 hot コピー」として使うのが筋（未計測）。
+
+## まとめ（GPU 枚数ごとの最速構成、decode tok/s = short / code / long、出力は greedy で一致）
+| GPU | 構成 | tok/s |
+|---|---|---|
+| A100×1 | Q4_K_S、hot 分割 42 GiB（decode 由来リスト）、32 スレッド | 9.2 / 8.3 / 8.4 |
+| A100×2 | Q4_K_S ホスト + IQ2_XXS hot コピー 60 GiB×2、`OMP_WAIT_POLICY=ACTIVE` | 15.5〜18.8 / 14.0〜17.6 / 16.3〜16.5 |
+
+すべて艦隊の Blender レンダーと CPU を共有した状態での計測。空いた箱なら CPU 側の項はさらに縮む。

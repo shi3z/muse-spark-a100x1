@@ -277,3 +277,34 @@ sched profile: 64 graphs, 65.48 ms/graph in the split loop: [CUDA0: 33.0 splits,
 [long] wall 80.4s prompt 3009 tok @ 39.6 tok/s, decode 128 tok @ 16.53 tok/s | 'We need to summarize policy in three sentences. The policy is 119 clauses, each says commi'
 sched profile: 64 graphs, 59.40 ms/graph in the split loop: [CUDA0: 33.0 splits, sync 0.00 ms, copy-in 0.82 ms, compute-call 0.54 ms] [CUDA1: 31.0 splits, sync 0.00 ms, copy-in 0.81 ms, compute-call 0.51 ms] [CPU: 63.0 splits, sync 0.00 ms, copy-in 33.47 ms, compute-call 23.22 ms]
 === omp tests done 23:30:13
+iq3xxs: ffn_down_exps=Q3_K 7.2 MB, ffn_gate_exps=IQ3_XXS 6.4 MB, ffn_up_exps=IQ3_XXS 6.4 MB -> 20.1 MB per expert, 296 GiB of experts
+# layers 0-61: 2248 experts, 42.0 GiB, cover 55.0% of the group's selections; per layer min 25 max 46
+# total 2248 experts, 42.0 GiB, cover 55.0% of all selections
+wrote hot_list_iq3xxs_1gpu.csv
+# layers 0-30: 3212 experts, 60.0 GiB, cover 85.1% of the group's selections; per layer min 85 max 150
+# layers 31-61: 3212 experts, 60.0 GiB, cover 86.7% of the group's selections; per layer min 85 max 116
+# total 6424 experts, 120.0 GiB, cover 85.9% of all selections
+wrote hot_list_iq3xxs_2gpu.csv
+=== custom_iq3_base_1gpu gpu2 00:20:52 IQ3_XXS threads=32 env='' flags=''; load 14.92, 9.55, 11.53
+2, 27701 MiB
+[short] wall 34.8s prompt 158 tok @ 14.7 tok/s, decode 128 tok @ 5.28 tok/s | 'We need to explain CRISPR gene editing in about 200 words. Should be concise. Probably ~18'
+[code] wall 27.0s prompt 158 tok @ 7.0 tok/s, decode 128 tok @ 5.32 tok/s | 'We need to write a thread-safe bounded blocking queue in Rust with short explanation. Prov'
+[long] wall 83.6s prompt 3009 tok @ 50.2 tok/s, decode 128 tok @ 4.84 tok/s | 'We need to summarize policy in three sentences. The policy is 119 clauses, each says commi'
+sched profile: 64 graphs, 205.60 ms/graph in the split loop: [CUDA0: 63.0 splits, sync 0.00 ms, copy-in 1.76 ms, compute-call 1.18 ms] [CPU: 63.0 splits, sync 0.00 ms, copy-in 21.58 ms, compute-call 181.06 ms]
+rows per host matmul: 8.00
+=== custom_iq3_hot42g_1gpu gpu2 00:29:08 IQ3_XXS threads=32 env='LLAMA_MOE_HOT_LIST=/mnt/ssdraid/project/muse-spark/hot_list_iq3xxs_1gpu.csv' flags=''; load 14.28, 19.96, 17.47
+2, 70699 MiB
+[short] wall 25.1s prompt 158 tok @ 15.0 tok/s, decode 128 tok @ 8.72 tok/s | 'We need to explain CRISPR gene editing in about 200 words. Should be concise. Probably ~18'
+[code] wall 21.1s prompt 158 tok @ 7.8 tok/s, decode 128 tok @ 6.93 tok/s | 'We need to write thread-safe bounded blocking queue in Rust with short explanation. Provid'
+[long] wall 76.5s prompt 3009 tok @ 50.6 tok/s, decode 128 tok @ 6.49 tok/s | 'We need to summarize policy in three sentences. The policy is 119 clauses: committee shall'
+sched profile: 64 graphs, 152.91 ms/graph in the split loop: [CUDA0: 63.0 splits, sync 0.00 ms, copy-in 1.56 ms, compute-call 1.28 ms] [CPU: 63.0 splits, sync 0.00 ms, copy-in 38.58 ms, compute-call 111.47 ms]
+rows per host matmul: 3.34
+=== custom_iq3_hot120g_2gpu gpu2,3 00:42:12 IQ3_XXS threads=32 env='LLAMA_MOE_HOT_LIST=/mnt/ssdraid/project/muse-spark/hot_list_iq3xxs_2gpu.csv' flags='-ts 31,31'; load 12.95, 14.18, 16.75
+2, 79659 MiB
+3, 72169 MiB
+[short] wall 20.9s prompt 158 tok @ 15.1 tok/s, decode 128 tok @ 12.21 tok/s | 'We need to explain CRISPR gene editing in about 200 words. Should be concise. Probably ~18'
+[code] wall 13.0s prompt 158 tok @ 8.4 tok/s, decode 128 tok @ 12.17 tok/s | 'We need to write thread-safe bounded blocking queue in Rust with short explanation. Provid'
+[long] wall 69.5s prompt 3009 tok @ 50.2 tok/s, decode 128 tok @ 10.42 tok/s | 'We need to summarize policy in three sentences. The policy is 119 clauses: committee shall'
+sched profile: 64 graphs, 97.75 ms/graph in the split loop: [CUDA0: 33.0 splits, sync 0.00 ms, copy-in 0.88 ms, compute-call 0.68 ms] [CUDA1: 31.0 splits, sync 0.00 ms, copy-in 0.85 ms, compute-call 0.64 ms] [CPU: 63.0 splits, sync 0.00 ms, copy-in 38.73 ms, compute-call 55.94 ms]
+rows per host matmul: 1.39
+=== iq3 tests done 00:43:56
